@@ -1,16 +1,16 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wasteland Groomer — Free Retro Pet-Care Game | PawJury</title>
-<meta name="description" content="Free retro browser game: five pet-care contracts in the wasteland — groom cats and dogs, vacuum a den full of fur, keep litter-box odor down before guests arrive, and beat carpet stains with enzyme science. No downloads.">
-<link rel="canonical" href="https://pawjury.com/game">
+<title>Wasteland Groomer — ретро-игра о питомцах пустоши | PawJury</title>
+<meta name="description" content="Бесплатная ретро-игра в браузере: пять контрактов по уходу за питомцами пустоши — вычёсывайте котов и собак, пылесосьте берлогу, держите запах лотков под контролем и побеждайте пятна энзимами.">
+<link rel="canonical" href="https://andkrm-ai.github.io/pawjury-groomer/">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://pawjury.com/game">
+<meta property="og:url" content="https://andkrm-ai.github.io/pawjury-groomer/">
 <meta property="og:site_name" content="PawJury">
-<meta property="og:title" content="Wasteland Groomer — a Retro Pet-Care Game">
-<meta property="og:description" content="Five pet-care contracts in the wasteland: groom cats and dogs, vacuum fur, control litter odor, beat carpet stains. Play free in your browser.">
+<meta property="og:title" content="Wasteland Groomer — ретро-игра о питомцах пустоши">
+<meta property="og:description" content="Пять контрактов в пустоши: грумьте котов и собак, пылесосьте шерсть, контролируйте запах лотков, побеждайте пятна. Бесплатно в браузере.">
 <meta name="twitter:card" content="summary">
 <style>
   :root{
@@ -51,7 +51,7 @@
   }
   .viewport{position:relative;display:flex;align-items:center;justify-content:center;background:var(--panel2);min-height:380px}
   canvas{image-rendering:pixelated;width:min(100%,440px)}
-  #vcv,#tcv{width:min(100%,640px);cursor:crosshair}
+  #vcv,#tcv{width:min(100%,660px);cursor:crosshair}
   .catname{
     position:absolute;top:8px;left:10px;color:var(--phos);letter-spacing:.15em;font-size:13px;
     text-shadow:0 0 8px rgba(93,255,126,.5)
@@ -61,6 +61,7 @@
   .meter i{display:block;height:100%;background:var(--phos);box-shadow:0 0 8px rgba(93,255,126,.5)}
   .meter.warn i{background:var(--amber);box-shadow:0 0 8px rgba(255,181,77,.5)}
   .meter.bad i{background:var(--red);box-shadow:0 0 8px rgba(255,93,77,.5)}
+  .meter .mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--amber);box-shadow:0 0 6px rgba(255,181,77,.6)}
   .kv{display:flex;justify-content:space-between;gap:8px}
   .kv span:last-child{color:var(--phos)}
   .side{display:flex;flex-direction:column;gap:10px}
@@ -82,6 +83,7 @@
   button.amber{color:var(--amber);border-color:#8a6226}
   button.amber:hover:not(:disabled){border-color:var(--amber);box-shadow:0 0 12px rgba(255,181,77,.25)}
   button.ghost{border-color:var(--phos-faint);color:var(--phos-dim);padding:6px 10px;font-size:11px}
+  .hint{font-size:12px;color:var(--phos-dim);align-self:center}
   .log{
     margin-top:10px;border:2px solid var(--phos-dim);background:#070c08;
     height:180px;overflow-y:auto;padding:8px 10px;font-size:13px;
@@ -111,7 +113,6 @@
   .win{color:var(--amber);text-shadow:0 0 10px rgba(255,181,77,.6)}
   footer{margin-top:14px;font-size:11px;color:var(--phos-dim);max-width:70ch}
   footer a{color:var(--phos-dim)}
-  /* contracts board */
   .board{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
   .contract{
     border:2px solid var(--phos-dim);background:var(--panel);padding:14px;cursor:pointer;text-align:left;
@@ -122,60 +123,38 @@
   .contract .ctitle{color:var(--phos);font-size:15px;letter-spacing:.12em;text-transform:uppercase;text-shadow:0 0 6px rgba(93,255,126,.4)}
   .contract .cdesc{font-size:12px;color:var(--ink);opacity:.85;text-transform:none;letter-spacing:0}
   .boardhead{margin:6px 0 12px;color:var(--phos-dim);max-width:70ch}
-  /* litter boxes */
-  .lboxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+  /* litter */
+  .lboxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
   .lbox{border:2px solid var(--phos-dim);background:var(--panel);padding:10px}
   .lbox h3{margin:0 0 6px;font-size:12px;letter-spacing:.2em;color:var(--phos)}
-  .lbox .labs{font-size:11px;color:var(--phos-dim)}
-  /* stains list */
-  .stlist{display:flex;flex-direction:column;gap:6px}
-  .stain-row{border:1px solid var(--phos-faint);padding:6px 8px;background:var(--panel2);cursor:pointer;font-size:12px}
-  .stain-row:hover{border-color:var(--phos-dim)}
-  .stain-row.sel{border-color:var(--amber);box-shadow:0 0 10px rgba(255,181,77,.2)}
+  .lbox canvas{width:100%;max-width:220px;display:block;margin:0 auto 6px}
+  .lbox .labs{font-size:11px;color:var(--phos-dim);min-height:16px}
+  /* stains */
+  .stinfo{font-size:12px;line-height:1.55}
+  .stinfo b{color:var(--phos)}
+  .stinfo .rec{color:var(--amber)}
+  .badge{display:inline-block;padding:0 6px;border:1px solid;font-size:10px;letter-spacing:.15em;text-transform:uppercase}
+  .b-fresh{color:var(--phos);border-color:var(--phos)}
+  .b-set{color:var(--red);border-color:var(--red)}
+  .b-enz{color:#6fd8ff;border-color:#6fd8ff}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div class="frame">
   <header>
-    <h1>PAWJURY <small>// WASTELAND GROOMER v0.2</small></h1>
+    <h1>PAWJURY <small>// WASTELAND GROOMER v0.3</small></h1>
     <div class="hud" id="hud"></div>
     <button class="ghost" id="bContracts">◂ Contracts</button>
   </header>
 
   <!-- CONTRACTS BOARD -->
   <section id="selScreen">
-    <p class="boardhead">The wasteland, 2287. Pets shed, dig, spill and stain — and somebody has to deal with it. Pick a contract from the board. Each one is its own little game.</p>
-    <div class="board">
-      <button class="contract" data-mode="cats">
-        <span class="cno">CONTRACT 01</span>
-        <span class="ctitle">Cat Groomer</span>
-        <span class="cdesc">Brush the vault cats. Every tool has its own temperament — and so does every cat. Collect 500 g of fur: enough to roll a second cat.</span>
-      </button>
-      <button class="contract" data-mode="dogs">
-        <span class="cno">CONTRACT 02</span>
-        <span class="ctitle">Dog Groomer</span>
-        <span class="cdesc">Bigger clients, bigger coats, bigger mats. Doodles of the wasteland await. Collect 800 g of fur.</span>
-      </button>
-      <button class="contract" data-mode="vacuum">
-        <span class="cno">CONTRACT 03</span>
-        <span class="ctitle">Vacuum Run</span>
-        <span class="cdesc">One den, one battery charge, fur everywhere — and a cat who does not respect your work. Collect 120 g before the battery dies.</span>
-      </button>
-      <button class="contract" data-mode="litter">
-        <span class="cno">CONTRACT 04</span>
-        <span class="ctitle">Odor Control</span>
-        <span class="cdesc">Three litter boxes, four cats, guests arriving in 14 turns. Keep the smell below the line of shame.</span>
-      </button>
-      <button class="contract" data-mode="stains">
-        <span class="cno">CONTRACT 05</span>
-        <span class="ctitle">Stain Response</span>
-        <span class="cdesc">Fresh stains blot out. Set-in stains need enzymes and patience. Scrubbing feels right and makes everything worse. Survive 12 rounds.</span>
-      </button>
-    </div>
+    <p class="boardhead" id="boardhead"></p>
+    <div class="board" id="board"></div>
   </section>
 
-  <!-- GROOMER (cats & dogs) -->
+  <!-- GROOMER -->
   <section id="groomScreen" class="hidden">
     <main>
       <section class="panel viewport">
@@ -185,56 +164,63 @@
       </section>
       <div class="side">
         <section class="panel">
-          <h2 id="petPanelTitle">Client</h2>
-          <div class="kv"><span>Fur (remaining)</span><span id="cFur">—</span></div>
+          <h2 id="pClient"></h2>
+          <div class="kv"><span id="kFur"></span><span id="cFur">—</span></div>
           <div class="meter" id="mFurWrap"><i id="mFur" style="width:100%"></i></div>
-          <div class="kv"><span>Patience</span><span id="cPat">—</span></div>
+          <div class="kv"><span id="kPat"></span><span id="cPat">—</span></div>
           <div class="meter" id="mPatWrap"><i id="mPat" style="width:100%"></i></div>
-          <div class="kv"><span>Trust</span><span id="cTrust">—</span></div>
+          <div class="kv"><span id="kTrust"></span><span id="cTrust">—</span></div>
           <div class="meter" id="mTrustWrap"><i id="mTrust" style="width:100%"></i></div>
-          <div class="kv"><span>Coat / size</span><span id="cCoat">—</span></div>
-          <div class="kv"><span>Temperament</span><span id="cTemp">—</span></div>
-          <div class="kv"><span>Mats</span><span id="cMats">—</span></div>
+          <div class="kv"><span id="kCoat"></span><span id="cCoat">—</span></div>
+          <div class="kv"><span id="kTemp"></span><span id="cTemp">—</span></div>
+          <div class="kv"><span id="kMats"></span><span id="cMats">—</span></div>
         </section>
         <section class="panel">
-          <h2>Tools</h2>
+          <h2 id="pTools"></h2>
           <div class="tools" id="toolList"></div>
         </section>
       </div>
     </main>
     <div class="actions">
-      <button id="bBrush">Brush</button>
-      <button id="bHand">Pet by hand</button>
-      <button id="bTreat" class="amber">Treat −$2</button>
-      <button id="bVac" class="hidden">Shark Vacuum</button>
-      <button id="bNext">Next client ▸</button>
-      <button id="bEndDay" class="amber">End day</button>
+      <button id="bBrush"></button>
+      <button id="bHand"></button>
+      <button id="bTreat" class="amber"></button>
+      <button id="bVac" class="hidden"></button>
+      <button id="bNext"></button>
+      <button id="bEndDay" class="amber"></button>
     </div>
   </section>
 
   <!-- VACUUM RUN -->
   <section id="vacScreen" class="hidden">
+    <section class="panel" style="margin-bottom:10px">
+      <div class="kv"><span id="kBat"></span><span id="vBat">100%</span></div>
+      <div class="meter" id="mBatWrap"><i id="mBat" style="width:100%"></i></div>
+      <div class="kv"><span id="kGot"></span><span id="vGot">0 g</span></div>
+      <div class="meter" id="mGotWrap"><i id="mGot" style="width:0%"></i></div>
+    </section>
     <section class="panel viewport" style="min-height:300px">
-      <canvas id="vcv" width="100" height="70" aria-label="Room map"></canvas>
+      <canvas id="vcv" width="200" height="140" aria-label="Room map"></canvas>
     </section>
     <div class="actions">
-      <span style="align-self:center;color:var(--phos-dim);font-size:12px">Click a tile to drive the vacuum there. It sucks up everything on the way.</span>
-      <button id="vGiveUp" class="amber">Abandon run</button>
+      <span class="hint" id="vHint"></span>
+      <button id="vGiveUp" class="amber"></button>
     </div>
   </section>
 
   <!-- ODOR CONTROL -->
   <section id="litScreen" class="hidden">
     <section class="panel" style="margin-bottom:10px">
-      <h2>Den air quality</h2>
-      <div class="kv"><span>Odor level</span><span id="lOdor">0</span></div>
-      <div class="meter" id="mOdorWrap"><i id="mOdor" style="width:0%"></i></div>
-      <div class="kv"><span>Guests arrive in</span><span id="lTurns">14 turns</span></div>
+      <h2 id="pAir"></h2>
+      <div class="kv"><span id="kOdor"></span><span id="lOdor">0 / 100</span></div>
+      <div class="meter" id="mOdorWrap"><i id="mOdor" style="width:0%"></i><span class="mark" style="left:30%"></span></div>
+      <div class="kv"><span id="kGuests"></span><span id="lTurns">—</span></div>
+      <div class="hint" id="lHint" style="margin-top:6px"></div>
     </section>
     <div class="lboxes" id="lBoxes"></div>
     <div class="actions">
-      <button id="lVent">Ventilate (<span id="lVentN">3</span> left)</button>
-      <button id="lWait">Do nothing</button>
+      <button id="lVent"></button>
+      <button id="lWait"></button>
     </div>
   </section>
 
@@ -242,40 +228,35 @@
   <section id="stainScreen" class="hidden">
     <main>
       <section class="panel viewport" style="min-height:300px">
-        <canvas id="tcv" width="100" height="70" aria-label="Carpet map"></canvas>
+        <canvas id="tcv" width="200" height="140" aria-label="Carpet map"></canvas>
       </section>
       <div class="side">
         <section class="panel">
-          <h2>Stains</h2>
-          <div class="stlist" id="stList"></div>
+          <h2 id="pSel"></h2>
+          <div class="stinfo" id="stInfo"></div>
         </section>
         <section class="panel">
-          <h2>Field manual</h2>
-          <div style="font-size:12px;color:var(--phos-dim);line-height:1.5">
-            FRESH → blot it, fast.<br>
-            SETTING / SET-IN → enzyme, then let it dwell 2 rounds.<br>
-            Scrubbing spreads set-in stains and cancels dwelling enzyme.<br>
-            2 actions per round.
-          </div>
+          <h2 id="pManual"></h2>
+          <div class="stinfo" id="stManual"></div>
         </section>
       </div>
     </main>
     <div class="actions">
-      <button id="tBlot">Blot</button>
-      <button id="tEnzyme">Apply enzyme</button>
-      <button id="tScrub" class="amber">Scrub</button>
-      <button id="tEnd">End round ▸</button>
+      <button id="tBlot"></button>
+      <button id="tEnzyme"></button>
+      <button id="tScrub" class="amber"></button>
+      <button id="tEnd"></button>
     </div>
   </section>
 
   <div class="log" id="log" aria-live="polite"></div>
 
-  <footer>A <a href="/">PawJury</a> mini-game. Five contracts, one wasteland, a lot of fur.</footer>
+  <footer id="foot"></footer>
 </div>
 
 <!-- GENERIC MODAL -->
 <div class="overlay hidden" id="ovM">
-  <div class="modal" id="ovMBox">
+  <div class="modal">
     <h2 id="mTitle"></h2>
     <div id="mBody"></div>
     <div class="actions" id="mBtns"></div>
@@ -284,6 +265,294 @@
 
 <script>
 'use strict';
+// ================= I18N =================
+const LANG = (document.documentElement.lang||'en').startsWith('ru') ? 'ru' : 'en';
+const STR = {
+en:{
+  boardhead:'The wasteland, 2287. Pets shed, dig, spill and stain — and somebody has to deal with it. Pick a contract from the board. Each one is its own little game.',
+  contract:'CONTRACT', foot:'A <a href="/">PawJury</a> mini-game. Five contracts, one wasteland, a lot of fur.',
+  contracts:'◂ Contracts', boardLog:'Contracts board. Pick a job.',
+  complete:'★ CONTRACT COMPLETE: ', failed:'✖ CONTRACT FAILED: ',
+  back:'Back to contracts', again:'Try again', keep:'Keep playing',
+  cards:{
+    cats:['Cat Groomer','Brush the vault cats. Every tool has its own temperament — and so does every cat. Collect 500 g of fur: enough to roll a second cat.'],
+    dogs:['Dog Groomer','Bigger clients, bigger coats, bigger mats. Doodles of the wasteland await. Collect 800 g of fur.'],
+    vacuum:['Vacuum Run','One den, one battery charge, fur everywhere — and a cat who does not respect your work. Collect 140 g before the battery dies.'],
+    litter:['Odor Control','Three litter boxes, four cats, guests arriving in 14 turns. Keep the smell below the line of shame.'],
+    stains:['Stain Response','Fresh stains blot out. Set-in stains need enzymes and patience. Scrubbing feels right and makes everything worse. Survive 12 rounds.'],
+  },
+  // groom
+  pClient:'Client', pTools:'Tools', kFur:'Fur (remaining)', kPat:'Patience', kTrust:'Trust',
+  kCoat:'Coat / size', kTemp:'Temperament', kMats:'Mats', none:'none', empty:'— empty —', noClient:'NO CLIENT',
+  undercoat:' + undercoat', clientsLeft:n=>' (clients left today: '+n+')',
+  bHand:'Pet by hand', bTreat:'Treat −$2', bVac:'Shark Vacuum', bNext:'Next client ▸', bEndDay:'End day',
+  brush:'Brush: ', brushNo:'Brush (no tool)', noTools:'No tools. Hands are a tool too.',
+  equipment:'equipment', durability:'durability: ', suspicious:'(suspicious)',
+  holding:t=>'Now holding: '+t, day:'DAY', caps:'CAPS', fur:'FUR', energy:'ENERGY',
+  sizes:{small:'small',medium:'medium',large:'large'}, coats:{short:'short',long:'long'},
+  temps:{chill:'chill',normal:'average',skittish:'skittish'},
+  gIntroT:sp=>sp+' — THE WASTELAND, 2287',
+  gIntro:(mode,win)=>'<p>You are a wandering groomer. Vault dwellers pay caps for de-shedded undercoat, and the fur you collect can be rolled into a <span class="win">'+(mode==='cats'?'SECOND CAT':'SPARE DOG')+'</span> ('+win+' g needed).</p><p>Every tool has its own temperament: one strips heroic amounts of fur but can leave <span style="color:var(--red)">bald spots</span>, one tires your hand, one lets fur slip through, one sends it flying all over the floor — a Shark vacuum picks that up.</p><p>Actions cost energy. When a client\'s patience runs out, the session ends. If trust drops below 10, they bolt — no payment.</p>',
+  gOpenShop:'▸ Open the trading post', gAccepted:t=>t+' contract accepted.',
+  shopT:'"EVERYTHING MUST GROOM" TRADING POST',
+  shopHead:m=>'<p style="color:var(--phos-dim)">Caps: <span class="win">$'+m+'</span>. Counterfeits roam the wasteland — buy from someone you trust.</p><div id="shopList"></div>',
+  startDay:'▸ Start the day', fakeName:'"FURminator" from a shady trader', fakeDesc:'Suspiciously cheap. What could possibly go wrong.',
+  floorFur:g=>'on the floor: '+g+' g of fur',
+  fumes:'Running on fumes. Time to end the day.',
+  fledCat:n=>n+' HISSED and bolted under the wardrobe. Session ruined, no payment.',
+  fledDog:n=>n+' GROWLED and bolted out the door. Session ruined, no payment.',
+  outPatience:n=>n+' is out of patience.',
+  fineBald:'bald-spot fine −$5', tip:'tip +$5 (happy client)', shineBonus:'shine bonus +$4',
+  marvel:noun=>'<span class="quote">"That\'s enough fur for a whole second '+noun+'!"</span> — the owner marvels.',
+  sessionDone:(n,g,pay,note)=>'Session with '+n+' complete: '+g+' g, payment <b>$'+pay+'</b>'+note,
+  lighter:n=>n+' looks lighter already. Reputation grows.',
+  shrug:'Barely any fur collected — the owner shrugs. $0.',
+  queueEmpty:'The queue is empty. End the day.',
+  client:(n,coat,dense,size,temp,mats)=>'▸▸ Client: <b>'+n+'</b> — '+coat+' coat'+(dense?' with dense undercoat':'')+', '+size+', temperament: '+temp+(mats?', mats: '+mats:'')+'.',
+  matsBlock:'Mats are getting in the deShedder\'s way — comb those out first.',
+  baldSpot:n=>'⚠ BALD SPOT! You over-brushed. '+n+' is horrified.',
+  static:s=>'Static! Some fur scattered across the room ('+s+' g on the floor).',
+  eject:'The eject button did nothing. Pulled the fur out by hand.',
+  oversized:noun=>'The brush is oversized for a small '+noun+'. Awkward.',
+  selfClean:'Self-clean button: fur popped off in one motion. Satisfying.',
+  holdButton:'You have to hold the button down the whole time — your hand is getting tired.',
+  tooBig:noun=>'Too big for a small '+noun+' — can\'t reach the belly.',
+  matOut:n=>'Mat combed out PAINLESSLY (+10 g). '+n+' approves.',
+  gaps:'The bristle gaps are too wide — it barely grabs short fur.',
+  handleCrack:'⚠ The handle CRACKED. It was always going to.',
+  slipThrough:'The wide bristle gaps let the fur slip right through. Almost nothing.',
+  delighted:n=>n+' is delighted — everybody loves the Safari.',
+  noGrab:'The thick flat bristles won\'t grab this coat type.',
+  flies:s=>'Fur FLIES EVERYWHERE — '+s+' g settled on the floor (and on you).',
+  gentle:noun=>'The skittish '+noun+' tolerates the rubber brush. Gentleness wins.',
+  mystery:g=>'??? The mystery brush behaves unpredictably ('+g+' g).',
+  pinOut:'A pin FELL OUT of the brush.', shine:n=>'The soft side added shine. '+n+' is gleaming (+payment bonus).',
+  counterfeit:'The counterfeit works at half strength. Buy from someone you trust.',
+  brushed:(g,left)=>'Brushed out <b>'+g+' g</b>. Left on the client: '+left+' g.',
+  broke:t=>'⚠ '+t+' has BROKEN for good.',
+  petted:g=>'Petted by hand: +trust, '+g+' g of fur (stuck to your palms).',
+  treat:n=>'Treat: '+n+' traded anger for mercy (+trust, +patience).',
+  vacuumed:g=>'Shark Vacuum: collected <b>'+g+' g</b> off the floor. Not a single hair lost.',
+  roar:noun=>'The vacuum\'s ROAR scared the skittish '+noun+'!',
+  safariDmg:'⚠ The Safari arrived DAMAGED: durability only 20. Wasteland logistics.',
+  bought:(t,p)=>'Bought: '+t+' for $'+p+'.',
+  dayStart:(d,n)=>'═══ DAY '+d+' ═══ Clients in the queue: '+n+'.',
+  dayOver:'Day over. The wasteland wind chases fur across your tent.',
+  gWinT:{cats:'CAT GROOMER',dogs:'DOG GROOMER'},
+  gWin:(mode,win,day,total,bald)=>'<p class="win" style="font-size:16px">"'+(mode==='cats'?'ENOUGH FUR FOR A SECOND CAT':'ENOUGH FUR FOR A SPARE DOG')+'"</p><p>You collected '+win+' g of undercoat and rolled a brand-new companion. The wasteland provides.</p><p style="color:var(--phos-dim)">Days: '+day+' · Clients served: '+total+' · Bald-spot incidents: '+bald+'</p>',
+  gWinLog:w=>'★★★ '+w+' g REACHED. Contract complete. ★★★',
+  tools:{
+    furm:['FURminator deShedding','Strips a shocking amount of undercoat per pass. Over-brushing risks bald spots. Static. The eject button is mostly decorative.'],
+    hertzko:['Hertzko Slicker (small)','The budget classic with a self-clean button — which you have to hold down the whole time. Gentle. Clumsy on small animals.'],
+    purple:['Hertzko Slicker Purple (L)','King of long coats: melts mats painlessly. Useless on short fur. Famously fragile handle.'],
+    safari:['Safari Self-Cleaning','Old faithful — lasts for years, pets come running for it. Wide bristle gaps let some fur slip through.'],
+    rubber:['FURminator Rubber Brush','The gentlest thing in the wasteland: kittens, puppies, sensitive skin. Barely holds fur — it flies everywhere.'],
+    dual:['FURminator Dual Brush','Mystery brush from a pre-war crate. Unpredictable yield. Finishes with shine (payment bonus). Pins may fall out.'],
+    shark:['Shark Vacuum','A vacuum. Clears fur off the floor — including everything the rubber brush scattered. Terrifies skittish clients.'],
+  },
+  catNames:['Nuka','Geiger','Gizmo','Stimpak','Atom','Bolt','Isotope','Cap','Rad-Whiskers','Plutonio','Fuse','Sparky','Courier','Mothball','Deathpaw'],
+  dogNames:['Dogmeat','Rex','Boomer','Rad-Rover','Sarge','Biscuit','Mutt','Scrapper','Vault Boyo','Howler','Bandit','Ranger'],
+  // vacuum
+  kBat:'Battery', kGot:'Collected', vHint:'Click a tile — the vacuum drives there, sucking up everything on the way. Furniture blocks the path.',
+  vGiveUp:'Abandon run', vTitle:'VACUUM RUN — ONE CHARGE, ONE DEN',
+  vIntro:t=>'<p>A vault dweller\'s den, ankle-deep in pet fur. Your Shark has <span class="win">one battery charge</span>.</p><p>Click a tile — the vacuum drives there (1% battery per tile) and sucks up everything on the way. Big tufts can jam the brush roll (−5%). The sofa hides the best tufts underneath its edge.</p><p>The resident cat is asleep. Wake it and it darts off, shedding as it goes. Collect <span class="win">'+t+' g</span> before the battery dies.</p>',
+  vPowerOn:'▸ Power on', vStarted:'Vacuum Run started. The Shark hums to life.',
+  vSucked:g=>'Sucked up '+g+' g.', vJam:g=>'Hairball JAM on a big tuft ('+g+' g)! Cleared the brush roll (−5% battery).',
+  vPanic:'The cat WAKES UP in a panic and darts across the den, shedding as it goes!',
+  vWin:(got,bat)=>'<p>Den cleared: <span class="win">'+got+' g</span> of fur with '+bat+'% battery to spare.</p><p>The resident cat pretends nothing happened.</p>',
+  vLose:(got,t)=>'<p>The battery died at '+got+' g of '+t+'. The fur reclaims its territory.</p>',
+  vAbandon:g=>'<p>Run abandoned at '+g+' g.</p>',
+  vTitleShort:'VACUUM RUN',
+  // litter
+  pAir:'Den air quality', kOdor:'Odor (keep under 30)', kGuests:'Guests arrive in',
+  turns:n=>n+' turns', lVent:n=>'Ventilate −15 odor ('+n+' left)', lWait:'Do nothing',
+  lHint:'One action per turn — then the cats take theirs. A box over 80% full gets bypassed… with consequences.',
+  lBox:'BOX', lLoad:'load', lStinks:'adds odor every turn!', lScoop:'Scoop −40%', lFresh:n=>'Fresh litter ('+n+')',
+  lTitle:'ODOR CONTROL — GUESTS IN 14 TURNS',
+  lIntro:'<p>Three litter boxes. Four cats. Guests arriving for dinner in <span class="win">14 turns</span>.</p><p>Each turn you take <b>one action</b>: scoop a box (−40% fill), refresh one with clean litter (2 bags total, box to 0% and −8 odor), ventilate (−15 odor, 3 uses), or do nothing. Then the cats take their turn.</p><p>Boxes over 50% quietly leak odor. A box over 80% gets <b>bypassed</b> — the cat goes… nearby (+8 odor). Win: odor below <span class="win">30</span> when the guests walk in.</p>',
+  lBreath:'▸ Take a deep breath', lStarted:'Odor Control started. It is not too bad. Yet.',
+  lScooped:i=>'Scooped box '+(i+1)+'. Honest work.',
+  lFreshed:i=>'Box '+(i+1)+': full refresh with clean litter. The den breathes easier (−8 odor).',
+  lVented:'Windows open. The wasteland air is, for once, the fresher option (−15 odor).',
+  lNothing:'You did nothing. Bold strategy.',
+  lCatsTurn:'— The cats\' turn —',
+  lBypass:(cat,i)=>'⚠ '+cat+' inspected box '+(i+1)+', judged it FULL, and went… nearby. (+8 odor)',
+  lUsed:(cat,i)=>cat+' used box '+(i+1)+' and buried it with the enthusiasm of a jackhammer.',
+  lStomach:'⚠ Someone had a rough stomach. No further questions. (+6 odor)',
+  lTurnBegins:n=>'— Turn '+n+' (your move) —',
+  lWinT:'ODOR CONTROL',
+  lWin:o=>'<p>The guests walk in… and smell <span class="win">nothing</span>. Odor: '+o+'/100.</p><p>"Wait, you have FOUR cats?" Highest praise in the wasteland.</p>',
+  lLose:o=>'<p>The guests walk in and their faces say everything. Odor: '+o+'/100 (needed &lt;30).</p>',
+  // stains
+  pSel:'Selected stain', pManual:'Field manual',
+  stManual:'<b>FRESH</b> → blot it, fast (−55% size).<br><b class="b-set" style="border:0;padding:0">SET-IN</b> → enzyme, then leave it alone 2 rounds.<br>Scrubbing spreads set-in stains and cancels dwelling enzyme.<br>2 actions per round. Click a stain on the carpet to select it.',
+  stNone:'Click a stain on the carpet.', stClean:'Spotless. Suspiciously spotless.',
+  tBlot:'Blot', tEnzyme:'Apply enzyme', tScrub:'Scrub', tEnd:'End round ▸',
+  round:'ROUND', actionsLeft:'ACTIONS', stainsN:'STAINS',
+  stTypes:{mud:'mud paws', cola:'nuka-cola', hair:'hairball aftermath', mystery:'mystery puddle'},
+  stFresh:'FRESH', stSet:'SET-IN', stEnz:n=>'ENZYME DWELLING ('+n+')',
+  stFreshIn:n=>'sets in after '+n+' more round'+(n===1?'':'s'),
+  stSize:'size', stRec:'Manual says: ',
+  recFresh:'blot it NOW.', recSet:'apply enzyme, then hands off.', recEnz:n=>'do NOT touch for '+n+' more round'+(n===1?'':'s')+'.',
+  stTitle:'STAIN RESPONSE — 12 ROUNDS ON THE CARPET',
+  stIntro:'<p>The den\'s only carpet is under attack. Stains arrive fresh, then <span class="win">set in</span> if ignored.</p><p><b>FRESH</b> stains: blot immediately. <b>SET-IN</b> stains: apply enzyme and let it dwell two rounds — do not touch it while it works. Scrubbing spreads set-in stains and cancels dwelling enzyme. You have 2 actions per round.</p><p>Win: at most <span class="win">1 stain</span> left after round 12. Click stains on the carpet to select them.</p>',
+  stTowels:'▸ Grab the towels', stStarted:'Stain Response started. Round 1.',
+  stGone:(t,how)=>'Stain GONE ('+t+', '+how+').',
+  howBlot:'blotted while fresh', howScrub:'scrubbed', howEnzyme:'enzyme breakdown',
+  stBlotted:s=>'Blotted. The stain shrinks to '+s+'.',
+  stEnzApplied:t=>'Enzyme applied to '+t+'. Now the hard part: leave it alone.',
+  stScrubEnz:'⚠ You scrubbed a dwelling enzyme. All that patient chemistry — cancelled.',
+  stScrubFresh:s=>'Scrubbed a fresh stain. It worked, mostly. Size '+s+'.',
+  stScrubSet:s=>'⚠ You scrubbed a set-in stain. It is now a BIGGER set-in stain ('+s+'). It felt productive though.',
+  stSetIn:t=>t+' has SET IN. Enzymes only, now.',
+  stNew:t=>'▸ New stain incoming: '+t+'!',
+  stRound:n=>'— Round '+n+' —',
+  stWinT:'STAIN RESPONSE',
+  stWin:(left,cleaned)=>'<p>Round 12 over: <span class="win">'+left+' stain'+(left===1?'':'s')+'</span> left, '+cleaned+' defeated.</p><p>The carpet lives to be ruined another day.</p>',
+  stLose:(left,cleaned)=>'<p>Round 12 over with '+left+' stains still on the carpet (needed ≤1). '+cleaned+' were defeated, though.</p>',
+},
+ru:{
+  boardhead:'Пустошь, 2287 год. Питомцы линяют, копают, разливают и оставляют пятна — и кто-то должен с этим разбираться. Выберите контракт с доски. Каждый — своя маленькая игра.',
+  contract:'КОНТРАКТ', foot:'Мини-игра <a href="https://pawjury.com/">PawJury</a>. Пять контрактов, одна пустошь, очень много шерсти.',
+  contracts:'◂ Контракты', boardLog:'Доска контрактов. Выбирайте работу.',
+  complete:'★ КОНТРАКТ ВЫПОЛНЕН: ', failed:'✖ КОНТРАКТ ПРОВАЛЕН: ',
+  back:'К контрактам', again:'Ещё раз', keep:'Продолжить играть',
+  cards:{
+    cats:['Кошачий грумер','Вычёсывайте котов убежища. У каждого инструмента свой характер — как и у каждого кота. Соберите 500 г шерсти: хватит скатать второго кота.'],
+    dogs:['Собачий грумер','Клиенты крупнее, шерсти больше, колтуны серьёзнее. Дудли пустоши ждут. Соберите 800 г шерсти.'],
+    vacuum:['Пылесосный рейд','Одна берлога, один заряд батареи, шерсть повсюду — и кот, не уважающий ваш труд. Соберите 140 г до разряда.'],
+    litter:['Контроль запаха','Три лотка, четыре кота, гости через 14 ходов. Удержите запах ниже границы позора.'],
+    stains:['Отряд по пятнам','Свежие пятна промакиваются. Засевшие требуют энзимов и терпения. Тереть приятно — и только хуже. Продержитесь 12 раундов.'],
+  },
+  pClient:'Клиент', pTools:'Инструменты', kFur:'Шерсть (осталось)', kPat:'Терпение', kTrust:'Доверие',
+  kCoat:'Шерсть / размер', kTemp:'Характер', kMats:'Колтуны', none:'нет', empty:'— пусто —', noClient:'НЕТ КЛИЕНТА',
+  undercoat:' + подшёрсток', clientsLeft:n=>' (клиентов сегодня ещё: '+n+')',
+  bHand:'Гладить рукой', bTreat:'Лакомство −$2', bVac:'Пылесос Shark', bNext:'Следующий клиент ▸', bEndDay:'Закончить день',
+  brush:'Вычёсывать: ', brushNo:'Вычёсывать (нет щётки)', noTools:'Инструментов нет. Руки — тоже инструмент.',
+  equipment:'оборудование', durability:'прочность: ', suspicious:'(подозрительный)',
+  holding:t=>'Взят в руки: '+t, day:'ДЕНЬ', caps:'КРЫШКИ', fur:'ШЕРСТЬ', energy:'СИЛЫ',
+  sizes:{small:'мелкий',medium:'средний',large:'крупный'}, coats:{short:'короткая',long:'длинная'},
+  temps:{chill:'флегма',normal:'обычный',skittish:'нервный'},
+  gIntroT:sp=>sp+' — ПУСТОШЬ, 2287',
+  gIntro:(mode,win)=>'<p>Вы — странствующий грумер. Жители убежищ платят крышками за вычесанный подшёрсток, а из собранной шерсти можно скатать <span class="win">'+(mode==='cats'?'ВТОРОГО КОТА':'ЗАПАСНОГО ПСА')+'</span> (нужно '+win+' г).</p><p>У каждого инструмента свой характер: один снимает героические объёмы, но оставляет <span style="color:var(--red)">лысые пятна</span>, у другого устаёт рука, третий пропускает шерсть, четвёртый разбрасывает её по полу — пылесос Shark это подберёт.</p><p>Действия тратят силы. Кончится терпение клиента — сессия окончена. Доверие ниже 10 — сбежит без оплаты.</p>',
+  gOpenShop:'▸ Открыть лавку', gAccepted:t=>'Контракт принят: '+t+'.',
+  shopT:'ЛАВКА «ВСЁ ДЛЯ ГРУМИНГА»',
+  shopHead:m=>'<p style="color:var(--phos-dim)">Крышки: <span class="win">$'+m+'</span>. По пустоши ходят подделки — покупайте у тех, кому доверяете.</p><div id="shopList"></div>',
+  startDay:'▸ Начать день', fakeName:'«FURminator» у мутного торговца', fakeDesc:'Подозрительно дёшево. Что может пойти не так.',
+  floorFur:g=>'на полу: '+g+' г шерсти',
+  fumes:'Силы на исходе. Пора заканчивать день.',
+  fledCat:n=>n+' ЗАШИПЕЛ и сбежал под шкаф. Сессия сорвана, оплаты не будет.',
+  fledDog:n=>n+' ЗАРЫЧАЛ и выбежал за дверь. Сессия сорвана, оплаты не будет.',
+  outPatience:n=>'Терпение '+n+' кончилось.',
+  fineBald:'штраф за лысину −$5', tip:'чаевые +$5 (клиент доволен)', shineBonus:'бонус за блеск +$4',
+  marvel:noun=>'<span class="quote">«Да тут шерсти на второго '+noun+'!»</span> — восхищается владелец.',
+  sessionDone:(n,g,pay,note)=>'Сессия с '+n+' окончена: '+g+' г, оплата <b>$'+pay+'</b>'+note,
+  lighter:n=>n+' заметно полегчал. Репутация растёт.',
+  shrug:'Шерсти почти не собрали — владелец пожал плечами. $0.',
+  queueEmpty:'Очередь пуста. Закончите день.',
+  client:(n,coat,dense,size,temp,mats)=>'▸▸ Клиент: <b>'+n+'</b> — '+coat+' шерсть'+(dense?' с плотным подшёрстком':'')+', '+size+', характер: '+temp+(mats?', колтунов: '+mats:'')+'.',
+  matsBlock:'Колтуны мешают дешеддеру — сначала вычешите их.',
+  baldSpot:n=>'⚠ ЛЫСОЕ ПЯТНО! Перебрушивали. '+n+' в ужасе.',
+  static:s=>'Статика! Часть шерсти разлетелась по комнате ('+s+' г на пол).',
+  eject:'Кнопка выброса не сработала. Вытянули шерсть рукой.',
+  oversized:noun=>'Щётка великовата для мелкого клиента. Неловко.',
+  selfClean:'Кнопка самоочистки: шерсть слетела одним движением. Satisfying.',
+  holdButton:'Кнопку приходится держать всё время — рука устаёт.',
+  tooBig:noun=>'Слишком большая для мелкого клиента — живот не достать.',
+  matOut:n=>'Колтун вычесан БЕЗБОЛЕЗНЕННО (+10 г). '+n+' одобряет.',
+  gaps:'Зазоры между щетиной велики — короткую шерсть почти не берёт.',
+  handleCrack:'⚠ Ручка ТРЕСНУЛА. Это было неизбежно.',
+  slipThrough:'Шерсть проскочила сквозь широкие зазоры щетины. Почти пусто.',
+  delighted:n=>n+' в восторге — Safari любят все.',
+  noGrab:'Толстая плоская щетина не цепляет этот тип шерсти.',
+  flies:s=>'Шерсть ЛЕТИТ ПОВСЮДУ — '+s+' г осело на полу (и на вас).',
+  gentle:noun=>'Нервный клиент терпит резиновую щётку. Мягкость побеждает.',
+  mystery:g=>'??? Загадочная щётка ведёт себя непредсказуемо ('+g+' г).',
+  pinOut:'Штырёк ВЫПАЛ из щётки.', shine:n=>'Мягкая сторона навела блеск. '+n+' сияет (+бонус к оплате).',
+  counterfeit:'Подделка работает вполсилы. Покупайте у тех, кому доверяете.',
+  brushed:(g,left)=>'Вычесано <b>'+g+' г</b>. Осталось на клиенте: '+left+' г.',
+  broke:t=>'⚠ '+t+' СЛОМАЛСЯ окончательно.',
+  petted:g=>'Погладили рукой: +доверие, '+g+' г шерсти (осталась на ладонях).',
+  treat:n=>'Лакомство: '+n+' сменил гнев на милость (+доверие, +терпение).',
+  vacuumed:g=>'Пылесос Shark: собрано с пола <b>'+g+' г</b>. Ни одна шерстинка не пропала.',
+  roar:noun=>'РЁВ пылесоса напугал нервного клиента!',
+  safariDmg:'⚠ Safari приехал ПОВРЕЖДЁННЫМ: прочность всего 20. Логистика пустоши.',
+  bought:(t,p)=>'Куплено: '+t+' за $'+p+'.',
+  dayStart:(d,n)=>'═══ ДЕНЬ '+d+' ═══ Клиентов в очереди: '+n+'.',
+  dayOver:'День окончен. Ветер пустоши гоняет шерсть по палатке.',
+  gWinT:{cats:'КОШАЧИЙ ГРУМЕР',dogs:'СОБАЧИЙ ГРУМЕР'},
+  gWin:(mode,win,day,total,bald)=>'<p class="win" style="font-size:16px">«'+(mode==='cats'?'ШЕРСТИ ХВАТИТ НА ВТОРОГО КОТА':'ШЕРСТИ ХВАТИТ НА ЗАПАСНОГО ПСА')+'»</p><p>Вы собрали '+win+' г подшёрстка и скатали нового компаньона. Пустошь даёт.</p><p style="color:var(--phos-dim)">Дней: '+day+' · Клиентов обслужено: '+total+' · Лысых инцидентов: '+bald+'</p>',
+  gWinLog:w=>'★★★ '+w+' г НАБРАНО. Контракт выполнен. ★★★',
+  tools:{
+    furm:['FURminator deShedding','Снимает шокирующий объём подшёрстка за проход. При перебрушивании — лысые пятна. Статика. Кнопка выброса скорее декоративная.'],
+    hertzko:['Hertzko Slicker (small)','Народная классика с кнопкой самоочистки — которую надо держать всё время. Мягкая. Неуклюжа на мелких животных.'],
+    purple:['Hertzko Slicker Purple (L)','Король длинной шерсти: расплавляет колтуны безболезненно. Бесполезна на короткой. Знаменито хрупкая ручка.'],
+    safari:['Safari Self-Cleaning','Старая гвардия — служит годами, питомцы сбегаются сами. Широкие зазоры щетины пропускают часть шерсти.'],
+    rubber:['FURminator Rubber Brush','Самая мягкая вещь в пустоши: котята, щенки, чувствительная кожа. Шерсть почти не держит — летит повсюду.'],
+    dual:['FURminator Dual Brush','Загадочная щётка из довоенного ящика. Непредсказуемый сбор. Финиширует блеском (бонус к оплате). Штырьки выпадают.'],
+    shark:['Shark Vacuum','Пылесос. Собирает шерсть с пола — включая всё, что разбросала резиновая щётка. Ужасает нервных клиентов.'],
+  },
+  catNames:['Ядрик','Гейгер','Гайка','Стимпак','Атом','Болт','Изотоп','Крышка','Рад-Барсик','Плутоша','Фьюз','Искра','Курьер','Нафталин','Смертолап'],
+  dogNames:['Псина','Рекс','Бумер','Рад-Ровер','Сержант','Бисквит','Барбос','Утиль','Волт-Бой','Вой','Бандит','Рейнджер'],
+  kBat:'Батарея', kGot:'Собрано', vHint:'Кликните тайл — пылесос поедет туда, всасывая всё по пути. Мебель объезжает.',
+  vGiveUp:'Бросить рейд', vTitle:'ПЫЛЕСОСНЫЙ РЕЙД — ОДИН ЗАРЯД, ОДНА БЕРЛОГА',
+  vIntro:t=>'<p>Берлога жителя убежища, по щиколотку в шерсти. У вашего Shark <span class="win">один заряд батареи</span>.</p><p>Кликните тайл — пылесос поедет туда (1% батареи за тайл), всасывая всё по пути. Большие клоки заклинивают щётку (−5%). Лучшие клоки прячутся у края дивана.</p><p>Местный кот спит. Разбудите — рванёт через комнату, линяя на ходу. Соберите <span class="win">'+t+' г</span> до разряда.</p>',
+  vPowerOn:'▸ Включить', vStarted:'Рейд начался. Shark оживает с гулом.',
+  vSucked:g=>'Всосано '+g+' г.', vJam:g=>'ЗАКЛИНИЛО на большом клоке ('+g+' г)! Щётка прочищена (−5% батареи).',
+  vPanic:'Кот ПРОСЫПАЕТСЯ в панике и мчится через берлогу, линяя на ходу!',
+  vWin:(got,bat)=>'<p>Берлога чиста: <span class="win">'+got+' г</span> шерсти, осталось '+bat+'% батареи.</p><p>Местный кот делает вид, что ничего не было.</p>',
+  vLose:(got,t)=>'<p>Батарея села на '+got+' г из '+t+'. Шерсть возвращает себе территорию.</p>',
+  vAbandon:g=>'<p>Рейд брошен на '+g+' г.</p>',
+  vTitleShort:'ПЫЛЕСОСНЫЙ РЕЙД',
+  pAir:'Воздух в берлоге', kOdor:'Запах (держать ниже 30)', kGuests:'Гости придут через',
+  turns:n=>n+' ходов', lVent:n=>'Проветрить −15 запаха (осталось '+n+')', lWait:'Ничего не делать',
+  lHint:'Одно действие за ход — потом ходят коты. Лоток полнее 80% кот обойдёт стороной… с последствиями.',
+  lBox:'ЛОТОК', lLoad:'заполнен', lStinks:'добавляет запах каждый ход!', lScoop:'Убрать −40%', lFresh:n=>'Свежий наполнитель ('+n+')',
+  lTitle:'КОНТРОЛЬ ЗАПАХА — ГОСТИ ЧЕРЕЗ 14 ХОДОВ',
+  lIntro:'<p>Три лотка. Четыре кота. Гости придут на ужин через <span class="win">14 ходов</span>.</p><p>Каждый ход — <b>одно действие</b>: убрать из лотка (−40% заполнения), засыпать свежий наполнитель (всего 2 пакета, лоток в 0% и −8 запаха), проветрить (−15 запаха, 3 раза) или ничего не делать. Потом ходят коты.</p><p>Лотки полнее 50% тихо добавляют запах. Лоток полнее 80% кот <b>обойдёт</b> — и сходит… рядом (+8 запаха). Победа: запах ниже <span class="win">30</span>, когда войдут гости.</p>',
+  lBreath:'▸ Вдохнуть поглубже', lStarted:'Контроль запаха начался. Пока терпимо. Пока.',
+  lScooped:i=>'Убрано из лотка '+(i+1)+'. Честный труд.',
+  lFreshed:i=>'Лоток '+(i+1)+': полная замена наполнителя. Дышать легче (−8 запаха).',
+  lVented:'Окна открыты. Воздух пустоши — на этот раз свежий вариант (−15 запаха).',
+  lNothing:'Вы ничего не сделали. Смелая стратегия.',
+  lCatsTurn:'— Ход котов —',
+  lBypass:(cat,i)=>'⚠ '+cat+' осмотрел лоток '+(i+1)+', счёл его ПОЛНЫМ и сходил… рядом. (+8 запаха)',
+  lUsed:(cat,i)=>cat+' сходил в лоток '+(i+1)+' и закопал с энтузиазмом отбойного молотка.',
+  lStomach:'⚠ У кого-то прихватило живот. Без лишних вопросов. (+6 запаха)',
+  lTurnBegins:n=>'— Ход '+n+' (ваш ход) —',
+  lWinT:'КОНТРОЛЬ ЗАПАХА',
+  lWin:o=>'<p>Гости входят… и не чувствуют <span class="win">ничего</span>. Запах: '+o+'/100.</p><p>«Стоп, у вас ЧЕТЫРЕ кота?» Высшая похвала в пустоши.</p>',
+  lLose:o=>'<p>Гости входят, и их лица говорят всё. Запах: '+o+'/100 (нужно было &lt;30).</p>',
+  pSel:'Выбранное пятно', pManual:'Полевой устав',
+  stManual:'<b>СВЕЖЕЕ</b> → промакивать, быстро (−55% размера).<br><b class="b-set" style="border:0;padding:0">ЗАСЕВШЕЕ</b> → энзим, потом не трогать 2 раунда.<br>Тереть засевшее — размажете; тереть энзим — отмените химию.<br>2 действия за раунд. Кликните пятно на ковре, чтобы выбрать.',
+  stNone:'Кликните пятно на ковре.', stClean:'Чисто. Подозрительно чисто.',
+  tBlot:'Промакивать', tEnzyme:'Нанести энзим', tScrub:'Тереть', tEnd:'Конец раунда ▸',
+  round:'РАУНД', actionsLeft:'ДЕЙСТВИЯ', stainsN:'ПЯТНА',
+  stTypes:{mud:'грязные лапы', cola:'нюка-кола', hair:'последствия hairball', mystery:'загадочная лужа'},
+  stFresh:'СВЕЖЕЕ', stSet:'ЗАСЕВШЕЕ', stEnz:n=>'ЭНЗИМ РАБОТАЕТ ('+n+')',
+  stFreshIn:n=>'засядет через '+n+' раунд'+(n===1?'':'а'),
+  stSize:'размер', stRec:'Устав говорит: ',
+  recFresh:'промакивать НЕМЕДЛЕННО.', recSet:'нанести энзим и убрать руки.', recEnz:n=>'НЕ трогать ещё '+n+' раунд'+(n===1?'':'а')+'.',
+  stTitle:'ОТРЯД ПО ПЯТНАМ — 12 РАУНДОВ НА КОВРЕ',
+  stIntro:'<p>Единственный ковёр берлоги атакован. Пятна появляются свежими, а если их игнорировать — <span class="win">засядут</span>.</p><p><b>СВЕЖИЕ</b> пятна: промакивать немедленно. <b>ЗАСЕВШИЕ</b>: нанести энзим и дать поработать два раунда — не трогать, пока работает. Тереть засевшее — размажете, тереть энзим — отмените. 2 действия за раунд.</p><p>Победа: не больше <span class="win">1 пятна</span> после 12-го раунда. Пятна выбираются кликом по ковру.</p>',
+  stTowels:'▸ Хватать полотенца', stStarted:'Отряд по пятнам приступил. Раунд 1.',
+  stGone:(t,how)=>'Пятно ИСЧЕЗЛО ('+t+', '+how+').',
+  howBlot:'промокнули свежим', howScrub:'оттёрли', howEnzyme:'энзим доел',
+  stBlotted:s=>'Промокнули. Пятно сжалось до '+s+'.',
+  stEnzApplied:t=>'Энзим нанесён на «'+t+'». Теперь самое сложное: не трогать.',
+  stScrubEnz:'⚠ Вы затёрли работающий энзим. Вся терпеливая химия — насмарку.',
+  stScrubFresh:s=>'Оттёрли свежее пятно. Почти сработало. Размер '+s+'.',
+  stScrubSet:s=>'⚠ Вы тёрли засевшее пятно. Теперь это БОЛЬШЕЕ засевшее пятно ('+s+'). Зато ощущалось продуктивно.',
+  stSetIn:t=>'«'+t+'» ЗАСЕЛО. Теперь только энзимы.',
+  stNew:t=>'▸ Новое пятно: '+t+'!',
+  stRound:n=>'— Раунд '+n+' —',
+  stWinT:'ОТРЯД ПО ПЯТНАМ',
+  stWin:(left,cleaned)=>'<p>12 раундов позади: осталось <span class="win">'+left+'</span> пятен, побеждено '+cleaned+'.</p><p>Ковёр доживёт до следующего разгрома.</p>',
+  stLose:(left,cleaned)=>'<p>12 раундов позади, а на ковре ещё '+left+' пятен (нужно ≤1). Зато '+cleaned+' побеждено.</p>',
+},
+};
+const T = STR[LANG];
+
 // ================= SHARED =================
 const $ = id => document.getElementById(id);
 const R = (a,b) => a + Math.random()*(b-a);
@@ -315,12 +584,8 @@ function modal(title, bodyHtml, btns){
 function contracts(){
   MODE = null; clearLog(); hud('');
   showScreen('selScreen');
-  log('Contracts board. Pick a job.','sys');
+  log(T.boardLog,'sys');
 }
-$('bContracts').onclick = contracts;
-document.querySelectorAll('.contract').forEach(el=>{
-  el.onclick = ()=> startMode(el.dataset.mode);
-});
 function startMode(mode){
   MODE = mode; clearLog();
   if(mode==='cats'||mode==='dogs') G_start(mode);
@@ -329,43 +594,52 @@ function startMode(mode){
   else if(mode==='stains') T_start();
 }
 function contractComplete(title, body){
-  modal('★ CONTRACT COMPLETE: '+title+' ★', body,
-    [['Back to contracts', contracts], ['Keep playing', null, 'ghost']]);
+  modal(T.complete+title+' ★', body, [[T.back, contracts], [T.keep, null, 'ghost']]);
 }
 function contractFailed(title, body, retryFn){
-  modal('✖ CONTRACT FAILED: '+title, body,
-    [['Try again', retryFn, 'amber'], ['Back to contracts', contracts, 'ghost']]);
+  modal(T.failed+title, body, [[T.again, retryFn, 'amber'], [T.back, contracts, 'ghost']]);
 }
 
-// ================= GROOMER (cats & dogs) =================
-const TOOLS = {
-  furm:   {name:'FURminator deShedding', short:'deShedding', price:35, dur:40,
-           desc:'Strips a shocking amount of undercoat per pass. Over-brushing risks bald spots. Static. The eject button is mostly decorative.'},
-  hertzko:{name:'Hertzko Slicker (small)', short:'Hertzko S', price:15, dur:35,
-           desc:'The budget classic with a self-clean button — which you have to hold down the whole time. Gentle. Clumsy on small animals.'},
-  purple: {name:'Hertzko Slicker Purple (L)', short:'Purple L', price:20, dur:25,
-           desc:'King of long coats: melts mats painlessly. Useless on short fur. Famously fragile handle.'},
-  safari: {name:'Safari Self-Cleaning', short:'Safari', price:12, dur:70,
-           desc:'Old faithful — lasts for years, pets come running for it. Wide bristle gaps let some fur slip through.'},
-  rubber: {name:'FURminator Rubber Brush', short:'Rubber', price:10, dur:60,
-           desc:'The gentlest thing in the wasteland: kittens, puppies, sensitive skin. Barely holds fur — it flies everywhere.'},
-  dual:   {name:'FURminator Dual Brush', short:'Dual', price:11, dur:30,
-           desc:'Mystery brush from a pre-war crate. Unpredictable yield. Finishes with shine (payment bonus). Pins may fall out.'},
-  shark:  {name:'Shark Vacuum', short:'Shark', price:60, dur:0, equipment:true,
-           desc:'A vacuum. Clears fur off the floor — including everything the rubber brush scattered. Terrifies skittish clients.'},
+// static texts
+(function initStatic(){
+  $('boardhead').textContent = T.boardhead;
+  $('foot').innerHTML = T.foot;
+  $('bContracts').textContent = T.contracts;
+  const board = $('board'); board.innerHTML='';
+  ['cats','dogs','vacuum','litter','stains'].forEach((m,i)=>{
+    const b = document.createElement('button');
+    b.className='contract';
+    b.innerHTML='<span class="cno">'+T.contract+' 0'+(i+1)+'</span>'+
+      '<span class="ctitle">'+T.cards[m][0]+'</span>'+
+      '<span class="cdesc">'+T.cards[m][1]+'</span>';
+    b.onclick=()=>startMode(m);
+    board.appendChild(b);
+  });
+  $('pClient').textContent=T.pClient; $('pTools').textContent=T.pTools;
+  $('kFur').textContent=T.kFur; $('kPat').textContent=T.kPat; $('kTrust').textContent=T.kTrust;
+  $('kCoat').textContent=T.kCoat; $('kTemp').textContent=T.kTemp; $('kMats').textContent=T.kMats;
+  $('bHand').textContent=T.bHand; $('bTreat').textContent=T.bTreat; $('bVac').textContent=T.bVac;
+  $('bNext').textContent=T.bNext; $('bEndDay').textContent=T.bEndDay;
+  $('kBat').textContent=T.kBat; $('kGot').textContent=T.kGot; $('vHint').textContent=T.vHint; $('vGiveUp').textContent=T.vGiveUp;
+  $('pAir').textContent=T.pAir; $('kOdor').textContent=T.kOdor; $('kGuests').textContent=T.kGuests;
+  $('lWait').textContent=T.lWait; $('lHint').textContent=T.lHint;
+  $('pSel').textContent=T.pSel; $('pManual').textContent=T.pManual; $('stManual').innerHTML=T.stManual;
+  $('tBlot').textContent=T.tBlot; $('tEnzyme').textContent=T.tEnzyme; $('tScrub').textContent=T.tScrub; $('tEnd').textContent=T.tEnd;
+})();
+
+// ================= GROOMER =================
+const TOOL_STATS = {
+  furm:{price:35,dur:40}, hertzko:{price:15,dur:35}, purple:{price:20,dur:25},
+  safari:{price:12,dur:70}, rubber:{price:10,dur:60}, dual:{price:11,dur:30},
+  shark:{price:60,dur:0,equipment:true},
 };
+const TOOL_SHORT = {furm:'deShedding',hertzko:'Hertzko S',purple:'Purple L',safari:'Safari',rubber:'Rubber',dual:'Dual',shark:'Shark'};
 const SPECIES = {
-  cats:{noun:'cat', title:'CAT GROOMER', win:500,
-        names:['Nuka','Geiger','Gizmo','Stimpak','Atom','Bolt','Isotope','Cap','Rad-Whiskers','Plutonio','Fuse','Sparky','Courier','Mothball','Deathpaw'],
-        base:{short:90,long:130}, pat:[65,100], sizes:['small','medium','large'], maxMats:3},
-  dogs:{noun:'dog', title:'DOG GROOMER', win:800,
-        names:['Dogmeat','Rex','Boomer','Rad-Rover','Sarge','Biscuit','Mutt','Scrapper','Vault Boyo','Howler','Bandit','Ranger'],
-        base:{short:120,long:190}, pat:[80,120], sizes:['medium','medium','large'], maxMats:4},
+  cats:{win:500, base:{short:90,long:130}, pat:[65,100], sizes:['small','medium','large'], maxMats:3},
+  dogs:{win:800, base:{short:120,long:190}, pat:[80,120], sizes:['medium','medium','large'], maxMats:4},
 };
-const SIZES = {small:'small', medium:'medium', large:'large'};
-const COATS = {short:'short', long:'long'};
-const TEMPS = {chill:'chill', normal:'average', skittish:'skittish'};
 let G = null;
+function noun(){ return LANG==='ru' ? (G.mode==='cats'?'кота':'пса') : (G.mode==='cats'?'cat':'dog'); }
 
 function G_start(mode){
   G = { sp:SPECIES[mode], mode,
@@ -373,19 +647,14 @@ function G_start(mode){
         inv:{}, eq:null, cat:null, catsLeft:0, sessionFur:0,
         won:false, totalCats:0, baldIncidents:0 };
   showScreen('groomScreen');
-  $('petPanelTitle').textContent = 'Client';
-  modal(G.sp.title+' — THE WASTELAND, 2287',
-    '<p>You are a wandering groomer. Vault dwellers pay caps for de-shedded undercoat, and the fur you collect can be rolled into a <span class="win">'+(mode==='cats'?'SECOND CAT':'SPARE DOG')+'</span> ('+G.sp.win+' g needed).</p>'+
-    '<p>Every tool has its own temperament: one strips heroic amounts of fur but can leave <span style="color:var(--red)">bald spots</span>, one tires your hand, one lets fur slip through, one sends it flying all over the floor — a Shark vacuum picks that up.</p>'+
-    '<p>Actions cost energy. When a client\'s patience runs out, the session ends. If trust drops below 10, they bolt — no payment.</p>',
-    [['▸ Open the trading post', G_openShop]]);
-  log(G.sp.title+' contract accepted.','sys');
+  modal(T.gIntroT(T.gWinT[mode]), T.gIntro(mode, G.sp.win), [[T.gOpenShop, G_openShop]]);
+  log(T.gAccepted(T.gWinT[mode]),'sys');
 }
 function G_hud(){
-  hud('<span>DAY <b>'+G.day+'</b></span>'+
-      '<span class="amber">CAPS <b>$'+G.money+'</b></span>'+
-      '<span>FUR <b>'+Math.round(G.fur)+' g</b> / '+G.sp.win+'</span>'+
-      '<span>ENERGY <b>'+Math.round(G.stam)+'</b></span>');
+  hud('<span>'+T.day+' <b>'+G.day+'</b></span>'+
+      '<span class="amber">'+T.caps+' <b>$'+G.money+'</b></span>'+
+      '<span>'+T.fur+' <b>'+Math.round(G.fur)+' g</b> / '+G.sp.win+'</span>'+
+      '<span>'+T.energy+' <b>'+Math.round(G.stam)+'</b></span>');
 }
 function G_newPet(){
   const sp = G.sp;
@@ -395,7 +664,7 @@ function G_newPet(){
   const temper = pick(['chill','normal','normal','skittish']);
   const base = sp.base[coat];
   const c = {
-    name:pick(sp.names), coat, size, dense, temper,
+    name:pick(G.mode==='cats'?T.catNames:T.dogNames), coat, size, dense, temper,
     hue: pick(['#c98f4e','#9a9a9a','#4d4d4d','#d8d8d8','#b06a3a']),
     furMax: Math.round(base*(dense?1.5:1)*(size==='large'?1.25:size==='small'?.8:1)),
     trust: RI(40,70), patience: RI(sp.pat[0],sp.pat[1]), patMax:sp.pat[1],
@@ -413,37 +682,37 @@ function meterSet(id, val, max){
 }
 function G_render(){
   G_hud();
-  $('floorFur').textContent = G.floor>0.5 ? 'on the floor: '+Math.round(G.floor)+' g of fur' : '';
+  $('floorFur').textContent = G.floor>0.5 ? T.floorFur(Math.round(G.floor)) : '';
   const c = G.cat;
   if(c && !c.done){
-    $('catName').textContent = '▸ '+c.name.toUpperCase()+' (clients left today: '+G.catsLeft+')';
+    $('catName').textContent = '▸ '+c.name.toUpperCase()+T.clientsLeft(G.catsLeft);
     $('cFur').textContent = Math.round(c.fur)+' / '+c.furMax+' g';
     $('cPat').textContent = Math.round(c.patience);
     $('cTrust').textContent = Math.round(c.trust);
-    $('cCoat').textContent = COATS[c.coat]+(c.dense?' + undercoat':'')+' / '+SIZES[c.size];
-    $('cTemp').textContent = TEMPS[c.temper];
-    $('cMats').textContent = c.mats>0? '⚠ '+c.mats : 'none';
+    $('cCoat').textContent = T.coats[c.coat]+(c.dense?T.undercoat:'')+' / '+T.sizes[c.size];
+    $('cTemp').textContent = T.temps[c.temper];
+    $('cMats').textContent = c.mats>0? '⚠ '+c.mats : T.none;
     meterSet('Fur', c.fur, c.furMax); meterSet('Pat', c.patience, c.patMax); meterSet('Trust', c.trust, 100);
   } else {
-    $('catName').textContent = '— empty —';
+    $('catName').textContent = T.empty;
     ['cFur','cPat','cTrust','cCoat','cTemp','cMats'].forEach(i=>$(i).textContent='—');
     meterSet('Fur',0,1);meterSet('Pat',0,1);meterSet('Trust',0,1);
   }
   const tl = $('toolList'); tl.innerHTML='';
   const ids = Object.keys(G.inv);
-  if(!ids.length) tl.innerHTML = '<div class="tdur">No tools. Hands are a tool too.</div>';
+  if(!ids.length) tl.innerHTML = '<div class="tdur">'+T.noTools+'</div>';
   ids.forEach(id=>{
-    const t = TOOLS[id], inv = G.inv[id];
+    const st = TOOL_STATS[id], inv = G.inv[id];
     const d = document.createElement('div');
     d.className = 'tool'+(G.eq===id?' eq':'');
-    d.innerHTML = '<div class="tname">'+(G.eq===id?'▸ ':'')+t.name+(inv.fake?' <span style="color:var(--amber)">(suspicious)</span>':'')+'</div>'
-      + '<div class="tdur">'+(t.equipment?'equipment':'durability: '+Math.max(0,Math.round(inv.dur))+'/'+inv.durMax)+'</div>';
-    if(!t.equipment) d.onclick = ()=>{ G.eq=id; log('Now holding: '+t.name,'sys'); G_render(); };
+    d.innerHTML = '<div class="tname">'+(G.eq===id?'▸ ':'')+T.tools[id][0]+(inv.fake?' <span style="color:var(--amber)">'+T.suspicious+'</span>':'')+'</div>'
+      + '<div class="tdur">'+(st.equipment?T.equipment:T.durability+Math.max(0,Math.round(inv.dur))+'/'+inv.durMax)+'</div>';
+    if(!st.equipment) d.onclick = ()=>{ G.eq=id; log(T.holding(T.tools[id][0]),'sys'); G_render(); };
     tl.appendChild(d);
   });
   const active = c && !c.done && !c.fled;
   $('bBrush').disabled = !active || !G.eq || G.stam<6;
-  $('bBrush').textContent = G.eq? 'Brush: '+TOOLS[G.eq].short : 'Brush (no tool)';
+  $('bBrush').textContent = G.eq? T.brush+TOOL_SHORT[G.eq] : T.brushNo;
   $('bHand').disabled = !active || G.stam<3;
   $('bTreat').disabled = !active || G.money<2;
   $('bVac').classList.toggle('hidden', !G.inv.shark);
@@ -451,7 +720,6 @@ function G_render(){
   $('bNext').disabled = !c || c.done;
   G_draw();
 }
-// pixel pet
 const cv = $('cv'), cx = cv.getContext('2d');
 let shakeT = 0;
 function G_draw(){
@@ -464,7 +732,7 @@ function G_draw(){
     for(let i=0;i<n;i++){ const x=(i*37)%90+3, y=67+((i*13)%9); cx.fillRect(x,y,2,1); }
   }
   const c = G.cat;
-  if(!c || c.done) { cx.fillStyle='#1c4027'; cx.font='8px monospace'; cx.fillText('NO CLIENT', 30,40); return; }
+  if(!c || c.done) { cx.fillStyle='#1c4027'; cx.font='8px monospace'; cx.fillText(T.noClient, 26,40); return; }
   const isDog = G.mode==='dogs';
   const dx = shakeT>0 ? (Math.random()*2-1)*2 : 0;
   const fluff = c.fur/c.furMax;
@@ -481,14 +749,14 @@ function G_draw(){
   cx.fillRect(bx,by,w,h);
   cx.fillRect(bx+2,by-3,w-4,4);
   const tphase = Math.floor(Date.now()/400)%2;
-  if(isDog){ cx.fillRect(bx+w, by-2+tphase*3, 4, 10); } // wagging up-tail
+  if(isDog){ cx.fillRect(bx+w, by-2+tphase*3, 4, 10); }
   else { cx.fillRect(bx+w, by+3+tphase*2, 10, 3); cx.fillRect(bx+w+8, by-1+tphase*3, 3, 6); }
   const hs = (c.size==='small'?14:16)+(isDog?2:0);
   cx.fillRect(bx-hs+4, by-hs+6, hs, hs);
-  if(isDog){ // snout + floppy ears
+  if(isDog){
     cx.fillRect(bx-hs-2, by-hs+13, 7, 5);
     cx.fillRect(bx-hs+3, by-hs+4, 3,8); cx.fillRect(bx+1, by-hs+4, 3,8);
-  } else { // pointy ears
+  } else {
     cx.fillRect(bx-hs+4, by-hs+2, 4,4); cx.fillRect(bx, by-hs+2, 4,4);
   }
   cx.fillStyle = 'rgba(0,0,0,.28)';
@@ -508,17 +776,17 @@ function G_gainFur(g){
   G.fur += g; G.sessionFur += g;
   if(!G.won && G.fur>=G.sp.win) G_win();
 }
-function G_spendStam(n){ G.stam = Math.max(0, G.stam-n); if(G.stam<3) log('Running on fumes. Time to end the day.','warn'); }
+function G_spendStam(n){ G.stam = Math.max(0, G.stam-n); if(G.stam<3) log(T.fumes,'warn'); }
 function G_patHit(c, n){
   const mult = c.temper==='skittish'?1.5:c.temper==='chill'?0.7:1;
   c.patience = Math.max(0, c.patience - n*mult);
 }
 function G_checkSession(c){
   if(c.trust<10 && Math.random()<.6){
-    c.fled = true; log(c.name+(G.mode==='dogs'?' GROWLED and bolted out the door.':' HISSED and bolted under the wardrobe.')+' Session ruined, no payment.','bad');
+    c.fled = true; log(G.mode==='dogs'?T.fledDog(c.name):T.fledCat(c.name),'bad');
     G_endSession(false); return true;
   }
-  if(c.patience<=0){ log(c.name+' is out of patience.','warn'); G_endSession(true); return true; }
+  if(c.patience<=0){ log(T.outPatience(c.name),'warn'); G_endSession(true); return true; }
   return false;
 }
 function G_endSession(paid){
@@ -527,25 +795,25 @@ function G_endSession(paid){
   if(paid && G.sessionFur>0.5){
     let pay = Math.round(G.sessionFur*0.12);
     let note = [];
-    if(c.bald){ pay = Math.max(0,pay-5); note.push('bald-spot fine −$5'); G.baldIncidents++; }
-    else if(c.trust>=70){ pay += 5; note.push('tip +$5 (happy client)'); }
-    if(c.shine){ pay += 4; note.push('shine bonus +$4'); }
-    if(G.sessionFur>=60) log('<span class="quote">"That\'s enough fur for a whole second '+G.sp.noun+'!"</span> — the owner marvels.','good');
+    if(c.bald){ pay = Math.max(0,pay-5); note.push(T.fineBald); G.baldIncidents++; }
+    else if(c.trust>=70){ pay += 5; note.push(T.tip); }
+    if(c.shine){ pay += 4; note.push(T.shineBonus); }
+    if(G.sessionFur>=60) log(T.marvel(noun()),'good');
     G.money += pay;
-    log('Session with '+c.name+' complete: '+Math.round(G.sessionFur)+' g, payment <b>$'+pay+'</b>'+(note.length?' ('+note.join(', ')+')':''),'good');
-    if(c.fur<c.furMax*0.5) log(c.name+' looks lighter already. Reputation grows.','sys');
+    log(T.sessionDone(c.name, Math.round(G.sessionFur), pay, note.length?' ('+note.join(', ')+')':''),'good');
+    if(c.fur<c.furMax*0.5) log(T.lighter(c.name),'sys');
   } else if(paid){
-    log('Barely any fur collected — the owner shrugs. $0.','warn');
+    log(T.shrug,'warn');
   }
   G.totalCats++; G.sessionFur = 0;
   G_render();
 }
 function G_nextPet(){
-  if(G.catsLeft<=0){ log('The queue is empty. End the day.','sys'); return; }
+  if(G.catsLeft<=0){ log(T.queueEmpty,'sys'); return; }
   if(G.cat && !G.cat.done) G_endSession(true);
   G.catsLeft--; G.cat = G_newPet(); G.sessionFur = 0;
   const c = G.cat;
-  log('▸▸ Client: <b>'+c.name+'</b> — '+COATS[c.coat]+' coat'+(c.dense?' with dense undercoat':'')+', '+SIZES[c.size]+', temperament: '+TEMPS[c.temper]+(c.mats?', mats: '+c.mats:'')+'.','sys');
+  log(T.client(c.name, T.coats[c.coat], c.dense, T.sizes[c.size], T.temps[c.temper], c.mats),'sys');
   G_render();
 }
 function G_brush(){
@@ -558,70 +826,69 @@ function G_brush(){
 
   if(id==='furm'){
     g = R(12,20) * (c.dense?1.6:1);
-    if(c.coat==='long' && c.mats>0){ g*=0.6; log('Mats are getting in the deShedder\'s way — comb those out first.','warn'); }
+    if(c.coat==='long' && c.mats>0){ g*=0.6; log(T.matsBlock,'warn'); }
     c.overbrush++;
     c.trust -= c.temper==='chill'?2:4;
     if(c.overbrush>3 && Math.random() < (c.overbrush-3)*0.12){
       c.bald = true; c.trust -= 30; g*=0.5;
-      log('⚠ BALD SPOT! You over-brushed. '+c.name+' is horrified.','bad');
+      log(T.baldSpot(c.name),'bad');
     }
-    if(Math.random()<.25){ const s=g*.3; g-=s; V_noop(); G.floor += s; log('Static! Some fur scattered across the room ('+Math.round(s)+' g on the floor).','warn'); }
-    if(Math.random()<.15) log('The eject button did nothing. Pulled the fur out by hand.','sys');
+    if(Math.random()<.25){ const s=g*.3; g-=s; G.floor += s; log(T.static(Math.round(s)),'warn'); }
+    if(Math.random()<.15) log(T.eject,'sys');
   }
   else if(id==='hertzko'){
     g = R(8,12);
     stam = 9;
-    if(c.size==='small'){ g*=0.7; if(Math.random()<.4) log('The brush is oversized for a small '+G.sp.noun+'. Awkward.','warn'); }
+    if(c.size==='small'){ g*=0.7; if(Math.random()<.4) log(T.oversized(noun()),'warn'); }
     c.trust -= 1;
-    if(Math.random()<.3) log('Self-clean button: fur popped off in one motion. Satisfying.','sys');
-    if(Math.random()<.2) log('You have to hold the button down the whole time — your hand is getting tired.','warn');
+    if(Math.random()<.3) log(T.selfClean,'sys');
+    if(Math.random()<.2) log(T.holdButton,'warn');
   }
   else if(id==='purple'){
-    if(c.size==='small'){ g = R(3,5); if(Math.random()<.5) log('Too big for a small '+G.sp.noun+' — can\'t reach the belly.','warn'); }
+    if(c.size==='small'){ g = R(3,5); if(Math.random()<.5) log(T.tooBig(noun()),'warn'); }
     else if(c.coat==='long'){
       g = R(14,18);
-      if(c.mats>0){ c.mats--; g+=10; c.trust+=2; log('Mat combed out PAINLESSLY (+10 g). '+c.name+' approves.','good'); }
-    } else { g = R(3,5); if(Math.random()<.5) log('The bristle gaps are too wide — it barely grabs short fur.','warn'); }
+      if(c.mats>0){ c.mats--; g+=10; c.trust+=2; log(T.matOut(c.name),'good'); }
+    } else { g = R(3,5); if(Math.random()<.5) log(T.gaps,'warn'); }
     c.trust -= 1;
-    if(Math.random()<.03){ inv.dur = 0; log('⚠ The handle CRACKED. It was always going to.','bad'); }
+    if(Math.random()<.03){ inv.dur = 0; log(T.handleCrack,'bad'); }
   }
   else if(id==='safari'){
-    if(Math.random()<.25){ g = R(0.5,1.5); log('The wide bristle gaps let the fur slip right through. Almost nothing.','warn'); }
+    if(Math.random()<.25){ g = R(0.5,1.5); log(T.slipThrough,'warn'); }
     else g = R(7,10);
     c.trust += 2;
-    if(Math.random()<.25) log(c.name+' is delighted — everybody loves the Safari.','good');
+    if(Math.random()<.25) log(T.delighted(c.name),'good');
   }
   else if(id==='rubber'){
-    if(c.coat==='short' && Math.random()<.3){ g = 0; log('The thick flat bristles won\'t grab this coat type.','warn'); }
+    if(c.coat==='short' && Math.random()<.3){ g = 0; log(T.noGrab,'warn'); }
     else g = R(4,6);
     c.trust += 3;
     const s = g*0.5; g -= s; G.floor += s;
-    if(s>0.5) log('Fur FLIES EVERYWHERE — '+Math.round(s)+' g settled on the floor (and on you).','warn');
-    if(c.temper==='skittish') log('The skittish '+G.sp.noun+' tolerates the rubber brush. Gentleness wins.','sys');
+    if(s>0.5) log(T.flies(Math.round(s)),'warn');
+    if(c.temper==='skittish') log(T.gentle(noun()),'sys');
   }
   else if(id==='dual'){
     g = R(2,9);
     c.shine = true; c.trust += 1;
-    if(Math.random()<.3) log('??? The mystery brush behaves unpredictably ('+Math.round(g)+' g).','sys');
-    if(Math.random()<.05){ inv.dur -= 10; log('A pin FELL OUT of the brush.','bad'); }
-    if(Math.random()<.4) log('The soft side added shine. '+c.name+' is gleaming (+payment bonus).','good');
+    if(Math.random()<.3) log(T.mystery(Math.round(g)),'sys');
+    if(Math.random()<.05){ inv.dur -= 10; log(T.pinOut,'bad'); }
+    if(Math.random()<.4) log(T.shine(c.name),'good');
   }
 
   g = Math.min(g*fakeMult, c.fur);
-  if(inv.fake && Math.random()<.3) log('The counterfeit works at half strength. Buy from someone you trust.','warn');
+  if(inv.fake && Math.random()<.3) log(T.counterfeit,'warn');
   c.fur -= g; G_gainFur(g);
   inv.dur -= inv.fake?2.5:1;
   c.trust = clamp(c.trust,0,100);
   G_patHit(c, id==='rubber'?4:7);
   G_spendStam(stam);
-  if(g>0.5) log('Brushed out <b>'+Math.round(g)+' g</b>. Left on the client: '+Math.round(c.fur)+' g.','');
-  if(inv.dur<=0 && !TOOLS[id].equipment){
-    log('⚠ '+TOOLS[id].name+' has BROKEN for good.','bad');
-    delete G.inv[id]; if(G.eq===id) G.eq = Object.keys(G.inv).find(k=>!TOOLS[k].equipment)||null;
+  if(g>0.5) log(T.brushed(Math.round(g), Math.round(c.fur)),'');
+  if(inv.dur<=0 && !TOOL_STATS[id].equipment){
+    log(T.broke(T.tools[id][0]),'bad');
+    delete G.inv[id]; if(G.eq===id) G.eq = Object.keys(G.inv).find(k=>!TOOL_STATS[k].equipment)||null;
   }
   if(!G_checkSession(c)) G_render();
 }
-function V_noop(){} // placeholder to keep groom code tidy
 function G_hand(){
   const c = G.cat; if(!c||c.done) return;
   shakeT = 1;
@@ -629,44 +896,43 @@ function G_hand(){
   const g = Math.min(R(1,2.5), c.fur);
   c.fur -= g; G_gainFur(g);
   G_patHit(c,3); G_spendStam(3);
-  log('Petted by hand: +trust, '+g.toFixed(1)+' g of fur (stuck to your palms).','');
+  log(T.petted(g.toFixed(1)),'');
   if(!G_checkSession(c)) G_render();
 }
 function G_treat(){
   const c = G.cat; if(!c||c.done||G.money<2) return;
   G.money -= 2; c.trust = clamp(c.trust+14,0,100); c.patience = Math.min(c.patMax, c.patience+12);
-  log('Treat: '+c.name+' traded anger for mercy (+trust, +patience).','good');
+  log(T.treat(c.name),'good');
   G_render();
 }
 function G_vacuum(){
   if(!G.inv.shark || G.floor<1) return;
   const g = G.floor; G.floor = 0; G_gainFur(g);
   G_spendStam(10);
-  log('Shark Vacuum: collected <b>'+Math.round(g)+' g</b> off the floor. Not a single hair lost.','good');
+  log(T.vacuumed(Math.round(g)),'good');
   const c = G.cat;
-  if(c && !c.done && c.temper==='skittish'){ G_patHit(c,15); c.trust-=8; log('The vacuum\'s ROAR scared the skittish '+G.sp.noun+'!','warn'); if(G_checkSession(c)) return; }
+  if(c && !c.done && c.temper==='skittish'){ G_patHit(c,15); c.trust-=8; log(T.roar(noun()),'warn'); if(G_checkSession(c)) return; }
   G_render();
 }
 function G_openShop(){
   showScreen('groomScreen');
-  let body = '<p style="color:var(--phos-dim)">Caps: <span class="win">$'+G.money+'</span>. Counterfeits roam the wasteland — buy from someone you trust.</p><div id="shopList"></div>';
-  modal('"EVERYTHING MUST GROOM" TRADING POST', body, [['▸ Start the day', G_startDay]]);
+  modal(T.shopT, T.shopHead(G.money), [[T.startDay, G_startDay]]);
   const list = $('shopList');
-  Object.keys(TOOLS).forEach(id=>{
-    const t = TOOLS[id];
-    if(G.inv[id] && t.equipment) return;
+  Object.keys(TOOL_STATS).forEach(id=>{
+    const st = TOOL_STATS[id];
+    if(G.inv[id] && st.equipment) return;
     const row = document.createElement('div'); row.className='shopitem';
-    row.innerHTML = '<div><div class="sname">'+t.name+'</div><div class="sdesc">'+t.desc+'</div></div>';
+    row.innerHTML = '<div><div class="sname">'+T.tools[id][0]+'</div><div class="sdesc">'+T.tools[id][1]+'</div></div>';
     const btn = document.createElement('button');
-    btn.className='amber'; btn.innerHTML='$'+t.price;
-    btn.disabled = G.money<t.price || !!(G.inv[id]&&!t.equipment&&G.inv[id].dur>0);
-    btn.onclick = (e)=>{ e.stopPropagation(); G_buy(id, t.price, false); G_refreshShopMoney(); btn.disabled = true; };
+    btn.className='amber'; btn.innerHTML='$'+st.price;
+    btn.disabled = G.money<st.price || !!(G.inv[id]&&!st.equipment&&G.inv[id].dur>0);
+    btn.onclick = (e)=>{ e.stopPropagation(); G_buy(id, st.price, false); G_refreshShopMoney(); btn.disabled = true; };
     const pr = document.createElement('div'); pr.className='price'; pr.appendChild(btn);
     row.appendChild(pr); list.appendChild(row);
   });
   if(G.day>1 && Math.random()<.5 && !G.inv.furm){
     const row = document.createElement('div'); row.className='shopitem fake';
-    row.innerHTML = '<div><div class="sname">"FURminator" from a shady trader</div><div class="sdesc">Suspiciously cheap. What could possibly go wrong.</div></div>';
+    row.innerHTML = '<div><div class="sname">'+T.fakeName+'</div><div class="sdesc">'+T.fakeDesc+'</div></div>';
     const btn = document.createElement('button'); btn.className='amber'; btn.innerHTML='$19';
     btn.disabled = G.money<19;
     btn.onclick = (e)=>{ e.stopPropagation(); G_buy('furm', 19, Math.random()<.6); G_refreshShopMoney(); btn.disabled = true; };
@@ -680,32 +946,29 @@ function G_refreshShopMoney(){
 function G_buy(id, price, fake){
   if(G.money<price) return;
   G.money -= price;
-  const t = TOOLS[id];
-  let dur = t.dur;
-  if(id==='safari' && Math.random()<.1){ dur = 20; log('⚠ The Safari arrived DAMAGED: durability only 20. Wasteland logistics.','warn'); }
-  G.inv[id] = {dur, durMax:t.dur, fake:!!fake};
-  if(!t.equipment && !G.eq) G.eq = id;
-  log('Bought: '+t.name+' for $'+price+'.','sys');
+  const st = TOOL_STATS[id];
+  let dur = st.dur;
+  if(id==='safari' && Math.random()<.1){ dur = 20; log(T.safariDmg,'warn'); }
+  G.inv[id] = {dur, durMax:st.dur, fake:!!fake};
+  if(!st.equipment && !G.eq) G.eq = id;
+  log(T.bought(T.tools[id][0], price),'sys');
   G_render();
 }
 function G_startDay(){
   G.stam = 100; G.catsLeft = RI(3,4);
-  log('═══ DAY '+G.day+' ═══ Clients in the queue: '+G.catsLeft+'.','sys');
+  log(T.dayStart(G.day, G.catsLeft),'sys');
   G_nextPet();
 }
 function G_endDay(){
   if(G.cat && !G.cat.done) G_endSession(true);
   G.cat = null; G.catsLeft = 0; G.day++;
-  log('Day over. The wasteland wind chases fur across your tent.','sys');
+  log(T.dayOver,'sys');
   G_render(); G_openShop();
 }
 function G_win(){
   G.won = true;
-  contractComplete(G.sp.title,
-    '<p class="win" style="font-size:16px">"'+(G.mode==='cats'?'ENOUGH FUR FOR A SECOND CAT':'ENOUGH FUR FOR A SPARE DOG')+'"</p>'+
-    '<p>You collected '+G.sp.win+' g of undercoat and rolled a brand-new companion. The wasteland provides.</p>'+
-    '<p style="color:var(--phos-dim)">Days: '+G.day+' · Clients served: '+G.totalCats+' · Bald-spot incidents: '+G.baldIncidents+'</p>');
-  log('★★★ '+G.sp.win+' g REACHED. Contract complete. ★★★','good');
+  contractComplete(T.gWinT[G.mode], T.gWin(G.mode, G.sp.win, G.day, G.totalCats, G.baldIncidents));
+  log(T.gWinLog(G.sp.win),'good');
 }
 $('bBrush').onclick = G_brush;
 $('bHand').onclick = G_hand;
@@ -714,322 +977,476 @@ $('bVac').onclick = G_vacuum;
 $('bNext').onclick = G_nextPet;
 $('bEndDay').onclick = G_endDay;
 
-// ================= VACUUM RUN =================
-const VW=10, VH=7, VCELL=10; // canvas 100x70
+// ================= VACUUM RUN v2 =================
+const VW=10, VH=7, VC=20; // 200x140 canvas, 20px cells
 const vcv = $('vcv'), vx = vcv.getContext('2d');
 let V = null;
+// furniture: sofa (2 cells), table, plant — impassable
+const FURN = { sofa:[[2,1],[3,1]], table:[[6,3]], plant:[[8,1]] };
+const BLOCKED = new Set([].concat(FURN.sofa,FURN.table,FURN.plant).map(c=>c[0]+','+c[1]));
 function V_start(){
-  V = { vac:{x:0,y:0}, battery:100, got:0, target:120, fur:{}, cat:{x:VW-2,y:VH-2}, over:false };
+  V = { vac:{x:0,y:0}, battery:100, got:0, target:140, fur:{}, moving:false,
+        cat:{x:VW-2,y:VH-2,awake:0}, over:false, hover:null };
   let placed=0;
-  while(placed<16){
-    const x=RI(0,VW-1), y=RI(0,VH-1);
-    const k=x+','+y;
-    if((x===0&&y===0)||V.fur[k]) continue;
-    V.fur[k]=RI(4,18); placed++;
+  while(placed<15){
+    const x=RI(0,VW-1), y=RI(0,VH-1), k=x+','+y;
+    if((x===0&&y===0)||V.fur[k]||BLOCKED.has(k)||(x===V.cat.x&&y===V.cat.y)) continue;
+    V.fur[k]=RI(4,16); placed++;
   }
+  // bonus tufts hugging the sofa edge
+  [[2,2],[3,2],[4,1]].forEach(([x,y])=>{ const k=x+','+y; if(!BLOCKED.has(k)) V.fur[k]=(V.fur[k]||0)+RI(8,14); });
   showScreen('vacScreen');
-  modal('VACUUM RUN — ONE CHARGE, ONE DEN',
-    '<p>A vault dweller\'s den, ankle-deep in pet fur. Your Shark has <span class="win">one battery charge</span>.</p>'+
-    '<p>Click a tile — the vacuum drives there and sucks up everything on the way (1% battery per tile). Big tufts can jam the brush roll (−5%).</p>'+
-    '<p>The resident cat does not respect your work: get too close and it darts off, shedding as it goes. Collect <span class="win">'+V.target+' g</span> before the battery dies.</p>',
-    [['▸ Power on', ()=>{ V_hud(); V_draw(); log('Vacuum Run started. The Shark hums to life.','sys'); }]]);
+  modal(T.vTitle, T.vIntro(V.target), [[T.vPowerOn, ()=>{ V_render(); log(T.vStarted,'sys'); }]]);
 }
-function V_hud(){
-  hud('<span>BATTERY <b>'+Math.max(0,Math.round(V.battery))+'%</b></span>'+
-      '<span>COLLECTED <b>'+Math.round(V.got)+' g</b> / '+V.target+'</span>');
+function V_render(){
+  hud('<span>'+T.kBat+' <b>'+Math.max(0,Math.round(V.battery))+'%</b></span>'+
+      '<span>'+T.kGot+' <b>'+Math.round(V.got)+' g</b> / '+V.target+'</span>');
+  $('vBat').textContent = Math.max(0,Math.round(V.battery))+'%';
+  $('vGot').textContent = Math.round(V.got)+' g / '+V.target;
+  const bw=$('mBat'); bw.style.width=clamp(V.battery,0,100)+'%';
+  $('mBatWrap').className='meter'+(V.battery<25?' bad':V.battery<55?' warn':'');
+  $('mGot').style.width=clamp(V.got/V.target*100,0,100)+'%';
+  $('mGotWrap').className='meter';
+  V_draw();
 }
 function V_draw(){
-  vx.clearRect(0,0,100,70);
+  // wooden floor
   for(let y=0;y<VH;y++) for(let x=0;x<VW;x++){
-    vx.fillStyle = (x+y)%2? '#101a11':'#0d160e';
-    vx.fillRect(x*VCELL, y*VCELL, VCELL, VCELL);
+    vx.fillStyle = (y%2)? '#191307':'#150f06';
+    vx.fillRect(x*VC, y*VC, VC, VC);
+    vx.fillStyle = 'rgba(0,0,0,.25)';
+    vx.fillRect(x*VC, y*VC+VC-1, VC, 1); // plank seams
+    if((x*3+y)%4===0){ vx.fillStyle='rgba(255,255,255,.03)'; vx.fillRect(x*VC+3, y*VC+RI(2,14), 6,1); }
   }
+  // rug
+  vx.fillStyle='#12241a'; vx.fillRect(3*VC, 3*VC, 4*VC, 3*VC);
+  vx.strokeStyle='#1c4027'; vx.lineWidth=2; vx.strokeRect(3*VC+3, 3*VC+3, 4*VC-6, 3*VC-6);
   // dock
-  vx.fillStyle='#1c4027'; vx.fillRect(0,0,VCELL,VCELL);
+  vx.fillStyle='#1c4027'; vx.fillRect(1,1,VC-2,VC-2);
+  vx.fillStyle='#5dff7e'; vx.fillRect(7,4,3,6); vx.fillRect(10,8,3,6); // lightning
+  // hover highlight
+  if(V.hover && !V.moving && !V.over){
+    vx.fillStyle='rgba(93,255,126,.12)';
+    vx.fillRect(V.hover.x*VC, V.hover.y*VC, VC, VC);
+    vx.strokeStyle='rgba(93,255,126,.5)'; vx.lineWidth=1;
+    vx.strokeRect(V.hover.x*VC+.5, V.hover.y*VC+.5, VC-1, VC-1);
+    if(V.hover.cost!=null){
+      vx.fillStyle='#ffb54d'; vx.font='9px monospace';
+      vx.fillText('-'+V.hover.cost+'%', V.hover.x*VC+2, V.hover.y*VC+9);
+    }
+  }
   // fur tufts
   Object.keys(V.fur).forEach(k=>{
     const [x,y]=k.split(',').map(Number), g=V.fur[k];
+    const cxp=x*VC+VC/2, cyp=y*VC+VC/2;
+    const r = clamp(2+g/3, 3, 9);
+    vx.fillStyle='rgba(0,0,0,.3)';
+    vx.beginPath(); vx.ellipse(cxp+1, cyp+2, r, r*0.6, 0, 0, 7); vx.fill();
     vx.fillStyle='#8fd8a5';
-    const n = clamp(Math.round(g/3),1,6);
-    for(let i=0;i<n;i++) vx.fillRect(x*VCELL+2+((i*3)%6), y*VCELL+2+((i*5)%6), 2,1);
+    for(let i=0;i<Math.round(r*2.2);i++){
+      const a=i*2.399, rr=r*Math.sqrt((i%7)/7);
+      vx.fillRect(cxp+Math.cos(a)*rr, cyp+Math.sin(a)*rr*0.7, 2,2);
+    }
+    vx.fillStyle='#cfeedd';
+    vx.fillRect(cxp-1, cyp-1, 2,2);
   });
-  // cat
+  // sofa
+  vx.fillStyle='#24301f'; vx.fillRect(2*VC, 1*VC-6, 2*VC, VC+6);
+  vx.fillStyle='#2e3d28'; vx.fillRect(2*VC+2, 1*VC-2, 2*VC-4, VC-6);
+  vx.fillStyle='#1a241a'; vx.fillRect(2*VC, 1*VC+VC-4, 4,4); vx.fillRect(4*VC-4, 1*VC+VC-4, 4,4);
+  // table
+  vx.fillStyle='#3a2c14'; vx.fillRect(6*VC+2, 3*VC+2, VC-4, VC-6);
+  vx.fillStyle='#241a0a'; vx.fillRect(6*VC+3, 3*VC+VC-6, 3,4); vx.fillRect(7*VC-6, 3*VC+VC-6, 3,4);
+  // plant
+  vx.fillStyle='#5a3018'; vx.fillRect(8*VC+6, 1*VC+11, 8, 7);
+  vx.fillStyle='#2f7a45';
+  vx.fillRect(8*VC+8, 1*VC+3, 4,9); vx.fillRect(8*VC+4, 1*VC+6, 4,5); vx.fillRect(8*VC+12, 1*VC+6, 4,5);
+  // cat (sleeping curl or awake)
+  const ct=V.cat, ccx=ct.x*VC+VC/2, ccy=ct.y*VC+VC/2;
   vx.fillStyle='#c98f4e';
-  vx.fillRect(V.cat.x*VCELL+2, V.cat.y*VCELL+3, 6,4);
-  vx.fillRect(V.cat.x*VCELL+1, V.cat.y*VCELL+1, 3,3);
-  // vacuum
+  vx.beginPath(); vx.ellipse(ccx, ccy+2, 8, 5, 0, 0, 7); vx.fill();
+  vx.fillRect(ccx-8, ccy-5, 7, 7); // head
+  vx.fillRect(ccx-8, ccy-7, 2,2); vx.fillRect(ccx-3, ccy-7, 2,2); // ears
+  vx.fillStyle='#a8743c'; vx.fillRect(ccx+2, ccy-1, 7,2); // tail curl
+  if(ct.awake>0){
+    vx.fillStyle='#ff5d4d'; vx.fillRect(ccx-7, ccy-3, 2,2); vx.fillRect(ccx-4, ccy-3, 2,2);
+    vx.fillStyle='#ffb54d'; vx.font='8px monospace'; vx.fillText('!!', ccx-2, ccy-9);
+  } else {
+    vx.fillStyle='#0a0f0a'; vx.fillRect(ccx-7, ccy-2, 3,1); vx.fillRect(ccx-3, ccy-2, 2,1);
+    vx.fillStyle='#5dff7e'; vx.font='7px monospace';
+    if(Math.floor(Date.now()/700)%2) vx.fillText('z', ccx+2, ccy-8);
+    else vx.fillText('zZ', ccx+1, ccy-7);
+  }
+  // vacuum robot
+  const vp=V.vac, vpx=vp.x*VC+VC/2, vpy=vp.y*VC+VC/2;
+  if(V.moving){ vx.fillStyle='rgba(255,181,77,.25)'; vx.beginPath(); vx.arc(vpx,vpy,11,0,7); vx.fill(); }
+  vx.fillStyle='rgba(0,0,0,.4)'; vx.beginPath(); vx.ellipse(vpx+1,vpy+3,8,5,0,0,7); vx.fill();
   vx.fillStyle= V.battery>25? '#ffb54d' : '#ff5d4d';
-  vx.fillRect(V.vac.x*VCELL+1, V.vac.y*VCELL+1, 8,8);
-  vx.fillStyle='#0a0f0a';
-  vx.fillRect(V.vac.x*VCELL+3, V.vac.y*VCELL+3, 4,4);
+  vx.beginPath(); vx.arc(vpx,vpy,8,0,7); vx.fill();
+  vx.fillStyle='#8a6226'; vx.beginPath(); vx.arc(vpx,vpy,5,0,7); vx.fill();
+  vx.fillStyle='#0a0f0a'; vx.beginPath(); vx.arc(vpx,vpy,2,0,7); vx.fill();
+  vx.fillStyle='#fff2c8'; vx.fillRect(vpx-1,vpy-8,2,2); // sensor light
 }
-vcv.addEventListener('click', e=>{
-  if(MODE!=='vacuum' || !V || V.over) return;
+setInterval(()=>{ if(MODE==='vacuum'&&V&&!V.over) V_draw(); }, 500);
+function V_bfs(from, to){
+  if(BLOCKED.has(to.x+','+to.y)) return null;
+  const q=[[from.x,from.y]], prev={}, seen=new Set([from.x+','+from.y]);
+  while(q.length){
+    const [x,y]=q.shift();
+    if(x===to.x&&y===to.y){
+      const path=[]; let k=x+','+y;
+      while(prev[k]){ const [px,py]=k.split(',').map(Number); path.unshift([px,py]); k=prev[k]; }
+      return path;
+    }
+    [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{
+      const nx=x+dx, ny=y+dy, nk=nx+','+ny;
+      if(nx<0||ny<0||nx>=VW||ny>=VH||seen.has(nk)||BLOCKED.has(nk)) return;
+      seen.add(nk); prev[nk]=x+','+y; q.push([nx,ny]);
+    });
+  }
+  return null;
+}
+function V_cell(e){
   const r = vcv.getBoundingClientRect();
-  const x = clamp(Math.floor((e.clientX-r.left)/r.width*VW),0,VW-1);
-  const y = clamp(Math.floor((e.clientY-r.top)/r.height*VH),0,VH-1);
-  V_drive(x,y);
+  return { x: clamp(Math.floor((e.clientX-r.left)/r.width*VW),0,VW-1),
+           y: clamp(Math.floor((e.clientY-r.top)/r.height*VH),0,VH-1) };
+}
+vcv.addEventListener('mousemove', e=>{
+  if(MODE!=='vacuum'||!V||V.over||V.moving) return;
+  const c = V_cell(e);
+  const path = V_bfs(V.vac, c);
+  V.hover = {x:c.x, y:c.y, cost: path? path.length : null};
 });
-function V_drive(tx,ty){
-  // L-shaped path: horizontal then vertical
-  const path=[];
-  let {x,y}=V.vac;
-  while(x!==tx){ x+= tx>x?1:-1; path.push([x,y]); }
-  while(y!==ty){ y+= ty>y?1:-1; path.push([x,y]); }
-  if(!path.length) return;
-  for(const [px,py] of path){
-    if(V.battery<=0) break;
+vcv.addEventListener('mouseleave', ()=>{ if(V) V.hover=null; });
+vcv.addEventListener('click', e=>{
+  if(MODE!=='vacuum' || !V || V.over || V.moving) return;
+  const c = V_cell(e);
+  const path = V_bfs(V.vac, c);
+  if(!path || !path.length) return;
+  V.moving = true; V.hover = null;
+  const step = ()=>{
+    if(V.over){ V.moving=false; return; }
+    const nxt = path.shift();
+    if(!nxt || V.battery<=0){ V.moving=false; V_finishCheck(); return; }
     V.battery -= 1;
-    V.vac={x:px,y:py};
-    const k=px+','+py;
+    V.vac = {x:nxt[0], y:nxt[1]};
+    const k = nxt[0]+','+nxt[1];
     if(V.fur[k]){
       const g=V.fur[k]; delete V.fur[k];
-      if(g>=12 && Math.random()<.2){ V.battery-=5; log('Hairball JAM on a big tuft ('+g+' g)! Cleared the brush roll (−5% battery).','warn'); }
+      if(g>=12 && Math.random()<.2){ V.battery-=5; log(T.vJam(g),'warn'); }
       V.got += g;
-      log('Sucked up '+g+' g.','');
+      log(T.vSucked(g),'');
     }
-    // scare check
-    if(Math.abs(px-V.cat.x)<=1 && Math.abs(py-V.cat.y)<=1){
-      const nx=RI(0,VW-1), ny=RI(0,VH-1);
+    if(Math.abs(nxt[0]-V.cat.x)<=1 && Math.abs(nxt[1]-V.cat.y)<=1 && V.cat.awake<=0){
+      V.cat.awake = 6;
+      let nx, ny, guard=0;
+      do{ nx=RI(0,VW-1); ny=RI(0,VH-1); }while((BLOCKED.has(nx+','+ny) || (Math.abs(nx-nxt[0])<3&&Math.abs(ny-nxt[1])<3)) && guard++<50);
       let drops=3;
       while(drops-->0){
-        const dk=RI(0,VW-1)+','+RI(0,VH-1);
+        let dx,dy,g2=0;
+        do{ dx=RI(0,VW-1); dy=RI(0,VH-1); }while(BLOCKED.has(dx+','+dy)&&g2++<30);
+        const dk=dx+','+dy;
         V.fur[dk]=(V.fur[dk]||0)+RI(1,3);
       }
-      V.cat={x:nx,y:ny};
-      log('The cat PANICS and darts across the den, shedding as it goes!','warn');
+      V.cat.x=nx; V.cat.y=ny;
+      log(T.vPanic,'warn');
     }
-  }
-  V_hud(); V_draw();
+    if(V.cat.awake>0) V.cat.awake--;
+    V_render();
+    if(V.got>=V.target || V.battery<=0){ V.moving=false; V_finishCheck(); return; }
+    setTimeout(step, 110);
+  };
+  step();
+});
+function V_finishCheck(){
+  V_render();
+  if(V.over) return;
   if(V.got>=V.target){
     V.over=true;
-    contractComplete('VACUUM RUN',
-      '<p>Den cleared: <span class="win">'+Math.round(V.got)+' g</span> of fur with '+Math.max(0,Math.round(V.battery))+'% battery to spare.</p>'+
-      '<p>The resident cat pretends nothing happened.</p>');
+    contractComplete(T.vTitleShort, T.vWin(Math.round(V.got), Math.max(0,Math.round(V.battery))));
   } else if(V.battery<=0){
     V.over=true;
-    contractFailed('VACUUM RUN',
-      '<p>The battery died at '+Math.round(V.got)+' g of '+V.target+'. The fur reclaims its territory.</p>',
-      V_start);
+    contractFailed(T.vTitleShort, T.vLose(Math.round(V.got), V.target), V_start);
   }
 }
-$('vGiveUp').onclick = ()=>{ if(V && !V.over){ V.over=true; contractFailed('VACUUM RUN','<p>Run abandoned at '+Math.round(V.got)+' g.</p>', V_start);} };
+$('vGiveUp').onclick = ()=>{ if(V && !V.over){ V.over=true; contractFailed(T.vTitleShort, T.vAbandon(Math.round(V.got)), V_start);} };
 
-// ================= ODOR CONTROL =================
+// ================= ODOR CONTROL v2 =================
 let L = null;
-const LCATS = ['Nuka','Geiger','Mothball','Deathpaw'];
 function L_start(){
-  L = { odor:20, turn:0, maxTurn:14, vents:3, litter:2,
-        boxes:[{load:30},{load:20},{load:45}], over:false };
+  L = { odor:20, turn:1, maxTurn:14, vents:3, litter:2,
+        boxes:[{load:30,lastUsed:false},{load:20,lastUsed:false},{load:45,lastUsed:false}], over:false };
   showScreen('litScreen');
-  modal('ODOR CONTROL — GUESTS IN 14 TURNS',
-    '<p>Three litter boxes. Four cats. Guests arriving for dinner in <span class="win">14 turns</span>.</p>'+
-    '<p>Every turn the cats do what cats do. A box over 80% full gets… bypassed, and the whole den suffers. One action per turn: scoop a box, refresh one with clean litter ('+2+' bags total), ventilate, or bravely do nothing.</p>'+
-    '<p>Win: odor below <span class="win">30</span> when the guests walk in.</p>',
-    [['▸ Take a deep breath', ()=>{ L_render(); log('Odor Control started. It is not too bad. Yet.','sys'); }]]);
+  L_buildBoxes();
+  modal(T.lTitle, T.lIntro, [[T.lBreath, ()=>{ L_render(); log(T.lStarted,'sys'); log(T.lTurnBegins(1),'sys'); }]]);
 }
-function L_hud(){
-  hud('<span>TURN <b>'+L.turn+'</b> / '+L.maxTurn+'</span>'+
-      '<span class="amber">ODOR <b>'+Math.round(L.odor)+'</b> / 100</span>'+
-      '<span>LITTER BAGS <b>'+L.litter+'</b></span>');
-}
-function L_render(){
-  L_hud();
-  $('lOdor').textContent = Math.round(L.odor);
-  const mo=$('mOdor'); mo.style.width=clamp(L.odor,0,100)+'%';
-  $('mOdorWrap').className='meter'+(L.odor>=60?' bad':L.odor>=30?' warn':'');
-  $('lTurns').textContent = (L.maxTurn-L.turn)+' turns';
-  $('lVentN').textContent = L.vents;
-  $('lVent').disabled = L.vents<=0 || L.over;
-  $('lWait').disabled = L.over;
+function L_buildBoxes(){
   const wrap=$('lBoxes'); wrap.innerHTML='';
   L.boxes.forEach((b,i)=>{
     const d=document.createElement('div'); d.className='lbox';
-    const pc=clamp(b.load,0,100);
-    d.innerHTML='<h3>BOX '+(i+1)+'</h3>'+
-      '<div class="meter'+(pc>=80?' bad':pc>=50?' warn':'')+'"><i style="width:'+pc+'%"></i></div>'+
-      '<div class="labs">load: '+Math.round(pc)+'%</div>';
-    const row=document.createElement('div'); row.className='actions'; row.style.marginTop='8px';
-    const b1=document.createElement('button'); b1.textContent='Scoop'; b1.disabled=L.over;
+    d.innerHTML='<h3>'+T.lBox+' '+(i+1)+'</h3>'+
+      '<canvas id="lc'+i+'" width="66" height="40"></canvas>'+
+      '<div class="meter" id="lm'+i+'w"><i id="lm'+i+'" style="width:0%"></i></div>'+
+      '<div class="labs" id="ll'+i+'"></div>';
+    const row=document.createElement('div'); row.className='actions'; row.style.marginTop='6px';
+    const b1=document.createElement('button'); b1.id='lScoop'+i; b1.textContent=T.lScoop;
     b1.onclick=()=>L_act('scoop',i);
-    const b2=document.createElement('button'); b2.textContent='Fresh litter'; b2.className='amber';
-    b2.disabled=L.over||L.litter<=0;
+    const b2=document.createElement('button'); b2.id='lFresh'+i; b2.className='amber';
     b2.onclick=()=>L_act('fresh',i);
     row.appendChild(b1); row.appendChild(b2);
     d.appendChild(row);
     wrap.appendChild(d);
   });
 }
+function L_hud(){
+  hud('<span>'+(LANG==='ru'?'ХОД':'TURN')+' <b>'+L.turn+'</b> / '+L.maxTurn+'</span>'+
+      '<span class="amber">'+(LANG==='ru'?'ЗАПАХ':'ODOR')+' <b>'+Math.round(L.odor)+'</b> / 100</span>');
+}
+function L_render(){
+  L_hud();
+  $('lOdor').textContent = Math.round(L.odor)+' / 100';
+  const mo=$('mOdor'); mo.style.width=clamp(L.odor,0,100)+'%';
+  $('mOdorWrap').className='meter'+(L.odor>=60?' bad':L.odor>=30?' warn':'');
+  const mk=document.createElement('span'); // keep threshold mark after class reset
+  mk.className='mark'; mk.style.left='30%'; $('mOdorWrap').appendChild(mk);
+  $('lTurns').textContent = T.turns(L.maxTurn-L.turn+1);
+  $('lVent').textContent = T.lVent(L.vents);
+  $('lVent').disabled = L.vents<=0 || L.over;
+  $('lWait').disabled = L.over;
+  L.boxes.forEach((b,i)=>{
+    const pc=clamp(b.load,0,100);
+    $('lm'+i).style.width=pc+'%';
+    $('lm'+i+'w').className='meter'+(pc>=80?' bad':pc>=50?' warn':'');
+    $('ll'+i).textContent = T.lLoad+': '+Math.round(pc)+'%'+(pc>=50? ' — '+T.lStinks : '');
+    $('lScoop'+i).disabled = L.over;
+    $('lFresh'+i).textContent = T.lFresh(L.litter);
+    $('lFresh'+i).disabled = L.over || L.litter<=0;
+    L_drawBox(i, b);
+  });
+}
+function L_drawBox(i, b){
+  const c=$('lc'+i); if(!c) return;
+  const g=c.getContext('2d');
+  g.clearRect(0,0,66,40);
+  // box
+  g.fillStyle='#2a3540'; g.fillRect(4,12,58,24);
+  g.fillStyle='#1a222a'; g.fillRect(7,15,52,18);
+  // litter
+  g.fillStyle='#9a9078';
+  const level = 15+18-Math.round(6);
+  g.fillRect(7, 21, 52, 12);
+  g.fillStyle='#b0a68c';
+  for(let k=0;k<40;k++) g.fillRect(8+((k*7)%50), 22+((k*3)%10), 1,1);
+  // clumps proportional to load
+  const clumps = Math.round(clamp(b.load,0,100)/9);
+  g.fillStyle='#4a3a24';
+  for(let k=0;k<clumps;k++) g.fillRect(9+((k*11)%48), 23+((k*5)%9), 3,2);
+  // stink waves
+  if(b.load>=50){
+    g.fillStyle= b.load>=80? '#ff5d4d':'#ffb54d';
+    const ph=Math.floor(Date.now()/400)%2;
+    [[16,8],[33,5],[50,8]].forEach(([wx,wy],j)=>{
+      g.fillRect(wx, wy-(ph?1:0)+j%2, 1,3); g.fillRect(wx+2, wy-3-(ph?0:1)+j%2, 1,3);
+    });
+  }
+  // cat used marker
+  if(b.lastUsed){
+    g.fillStyle='#c98f4e'; g.fillRect(48,2,10,7); g.fillRect(48,0,2,2); g.fillRect(55,0,2,2);
+    g.fillStyle='#0a0f0a'; g.fillRect(50,4,1,1); g.fillRect(53,4,1,1);
+  }
+}
+setInterval(()=>{ if(MODE==='litter'&&L&&!L.over) L.boxes.forEach((b,i)=>L_drawBox(i,b)); }, 400);
 function L_act(kind, i){
   if(L.over) return;
-  if(kind==='scoop'){ L.boxes[i].load=Math.max(0,L.boxes[i].load-40); log('Scooped box '+(i+1)+'. Honest work.',''); }
-  else if(kind==='fresh'){ L.litter--; L.boxes[i].load=0; L.odor=Math.max(0,L.odor-8); log('Box '+(i+1)+': full refresh with clean litter. The den breathes easier (−8 odor).','good'); }
-  else if(kind==='vent'){ L.vents--; L.odor=Math.max(0,L.odor-15); log('Windows open. The wasteland air is, for once, the fresher option (−15 odor).','good'); }
-  else log('You did nothing. Bold strategy.','sys');
-  L_turn();
+  if(kind==='scoop'){ L.boxes[i].load=Math.max(0,L.boxes[i].load-40); log(T.lScooped(i),''); }
+  else if(kind==='fresh'){ L.litter--; L.boxes[i].load=0; L.odor=Math.max(0,L.odor-8); log(T.lFreshed(i),'good'); }
+  else if(kind==='vent'){ L.vents--; L.odor=Math.max(0,L.odor-15); log(T.lVented,'good'); }
+  else log(T.lNothing,'sys');
+  L_catsTurn();
 }
 $('lVent').onclick=()=>L_act('vent');
 $('lWait').onclick=()=>L_act('wait');
-function L_turn(){
-  L.turn++;
-  // cats do what cats do
+function L_catsTurn(){
+  log(T.lCatsTurn,'sys');
+  L.boxes.forEach(b=>b.lastUsed=false);
   const uses=RI(1,2);
   for(let u=0;u<uses;u++){
-    const i=RI(0,2), box=L.boxes[i], cat=pick(LCATS);
+    const i=RI(0,2), box=L.boxes[i], cat=pick(T.catNames);
     if(box.load>80){
       L.odor+=8;
-      log('⚠ '+cat+' inspected box '+(i+1)+', judged it FULL, and went… nearby. (+8 odor)','bad');
+      log(T.lBypass(cat,i),'bad');
     } else {
-      box.load+=RI(15,25);
-      if(Math.random()<.3) log(cat+' used box '+(i+1)+' and buried it with the enthusiasm of a jackhammer.','sys');
+      box.load+=RI(12,22); box.lastUsed=true;
+      if(Math.random()<.35) log(T.lUsed(cat,i),'sys');
     }
   }
-  // passive odor from loads
-  L.odor += L.boxes.reduce((s,b)=> s + (b.load>50 ? (b.load-50)/25 : 0), 0.5);
+  L.odor += L.boxes.reduce((s,b)=> s + (b.load>50 ? (b.load-50)/30 : 0), 0.4);
   L.odor = clamp(L.odor,0,100);
-  if(Math.random()<.12){ L.odor+=6; log('⚠ Someone had a rough stomach. No further questions. (+6 odor)','warn'); }
+  if(Math.random()<.1){ L.odor+=6; log(T.lStomach,'warn'); }
   if(L.turn>=L.maxTurn){
     L.over=true; L_render();
-    if(L.odor<30){
-      contractComplete('ODOR CONTROL',
-        '<p>The guests walk in… and smell <span class="win">nothing</span>. Odor: '+Math.round(L.odor)+'/100.</p>'+
-        '<p>"Wait, you have FOUR cats?" Highest praise in the wasteland.</p>');
-    } else {
-      contractFailed('ODOR CONTROL',
-        '<p>The guests walk in and their faces say everything. Odor: '+Math.round(L.odor)+'/100 (needed &lt;30).</p>',
-        L_start);
-    }
+    if(L.odor<30) contractComplete(T.lWinT, T.lWin(Math.round(L.odor)));
+    else contractFailed(T.lWinT, T.lLose(Math.round(L.odor)), L_start);
     return;
   }
+  L.turn++;
+  log(T.lTurnBegins(L.turn),'sys');
   L_render();
 }
 
-// ================= STAIN RESPONSE =================
+// ================= STAIN RESPONSE v2 =================
 const tcv = $('tcv'), tx2 = tcv.getContext('2d');
-let T = null;
-const STYPES = [
-  {name:'mud paws', hue:'#7a5a34'},
-  {name:'nuka-cola', hue:'#8a3a2a'},
-  {name:'hairball aftermath', hue:'#6a7a3a'},
-  {name:'mystery puddle', hue:'#3a6a7a'},
-];
+let ST = null;
+const STYPE_KEYS=['mud','cola','hair','mystery'];
+const STYPE_HUE={mud:'#7a5a34', cola:'#8a3a2a', hair:'#6a7a3a', mystery:'#3a6a7a'};
 function T_start(){
-  T = { round:1, maxRound:12, ap:2, stains:[], sel:null, over:false, cleaned:0, nextId:1 };
+  ST = { round:1, maxRound:12, ap:2, stains:[], sel:null, over:false, cleaned:0, nextId:1 };
   T_spawn(); T_spawn();
   showScreen('stainScreen');
-  modal('STAIN RESPONSE — 12 ROUNDS ON THE CARPET',
-    '<p>The den\'s only carpet is under attack. Stains arrive fresh, then <span class="win">set in</span> if ignored.</p>'+
-    '<p>FRESH stains: blot immediately. SET-IN stains: apply enzyme and let it dwell two rounds — do not touch it while it works. Scrubbing spreads set-in stains and cancels dwelling enzyme. You have 2 actions per round.</p>'+
-    '<p>Win: at most <span class="win">1 stain</span> left after round 12.</p>',
-    [['▸ Grab the towels', ()=>{ T_render(); log('Stain Response started. Round 1.','sys'); }]]);
+  modal(T.stTitle, T.stIntro, [[T.stTowels, ()=>{ T_render(); log(T.stStarted,'sys'); }]]);
 }
 function T_spawn(){
-  const t=pick(STYPES);
-  T.stains.push({ id:T.nextId++, type:t, size:R(8,16), fresh:2, state:'fresh',
-                  enzyme:0, x:RI(10,90), y:RI(10,60) });
+  const key=pick(STYPE_KEYS);
+  ST.stains.push({ id:ST.nextId++, key, size:R(9,16), fresh:2, state:'fresh',
+                  enzyme:0, x:R(25,175), y:R(20,120) });
 }
 function T_hud(){
-  hud('<span>ROUND <b>'+T.round+'</b> / '+T.maxRound+'</span>'+
-      '<span>ACTIONS <b>'+T.ap+'</b></span>'+
-      '<span>STAINS <b>'+T.stains.length+'</b></span>');
+  const pips = '●'.repeat(ST.ap)+'○'.repeat(2-ST.ap);
+  hud('<span>'+T.round+' <b>'+ST.round+'</b> / '+ST.maxRound+'</span>'+
+      '<span class="amber">'+T.actionsLeft+' <b>'+pips+'</b></span>'+
+      '<span>'+T.stainsN+' <b>'+ST.stains.length+'</b></span>');
 }
 function T_render(){
   T_hud();
-  // canvas carpet
-  tx2.clearRect(0,0,100,70);
-  for(let y=0;y<7;y++) for(let x=0;x<10;x++){
-    tx2.fillStyle=(x+y)%2?'#14200f':'#111b0d';
+  // carpet
+  for(let y=0;y<14;y++) for(let x=0;x<20;x++){
+    tx2.fillStyle=(x+y)%2?'#15220f':'#121d0d';
     tx2.fillRect(x*10,y*10,10,10);
   }
-  T.stains.forEach(s=>{
-    tx2.fillStyle=s.type.hue;
-    const r=clamp(s.size/2,2,10);
-    for(let i=0;i<10;i++){
-      tx2.fillRect(s.x+Math.cos(i*1.7)*r*0.7, s.y+Math.sin(i*2.3)*r*0.5, 2,2);
+  tx2.strokeStyle='#1c4027'; tx2.lineWidth=2; tx2.strokeRect(4,4,192,132);
+  ST.stains.forEach(s=>{
+    const r=clamp(s.size/2,3,16);
+    // blob
+    tx2.fillStyle=STYPE_HUE[s.key];
+    for(let i=0;i<Math.round(r*3);i++){
+      const a=i*2.399, rr=r*Math.sqrt((i%9)/9);
+      tx2.fillRect(s.x+Math.cos(a)*rr, s.y+Math.sin(a)*rr*0.75, 2.5,2.5);
     }
-    tx2.fillRect(s.x-1,s.y-1,3,3);
-    if(T.sel===s.id){ tx2.strokeStyle='#ffb54d'; tx2.lineWidth=1; tx2.strokeRect(s.x-r-2, s.y-r-2, r*2+4, r*2+4); }
-    if(s.enzyme>0){ tx2.fillStyle='#5dff7e'; tx2.fillRect(s.x-2,s.y-5,1,1); tx2.fillRect(s.x+2,s.y-4,1,1); }
+    tx2.fillRect(s.x-1.5,s.y-1.5,3,3);
+    // state ring
+    let ring = s.enzyme>0 ? '#6fd8ff' : s.state==='fresh' ? '#5dff7e' : '#ff5d4d';
+    const pulse = s.state==='fresh' && s.enzyme===0 && Math.floor(Date.now()/400)%2;
+    tx2.strokeStyle=ring; tx2.lineWidth = pulse?2:1;
+    tx2.beginPath(); tx2.arc(s.x, s.y, r+4, 0, 7); tx2.stroke();
+    // countdown badge
+    let badge = s.enzyme>0 ? String(s.enzyme) : s.state==='fresh' ? String(s.fresh) : '';
+    if(badge){
+      tx2.fillStyle='#0a0f0a'; tx2.fillRect(s.x+r, s.y-r-8, 9, 9);
+      tx2.strokeStyle=ring; tx2.lineWidth=1; tx2.strokeRect(s.x+r+.5, s.y-r-7.5, 8, 8);
+      tx2.fillStyle=ring; tx2.font='7px monospace'; tx2.fillText(badge, s.x+r+2.5, s.y-r-1);
+    }
+    // enzyme bubbles
+    if(s.enzyme>0){
+      tx2.fillStyle='#6fd8ff';
+      const ph=Math.floor(Date.now()/300)%3;
+      tx2.fillRect(s.x-4, s.y-r-2+ph, 2,2); tx2.fillRect(s.x+3, s.y-r-4+((ph+1)%3), 2,2);
+    }
+    // selection
+    if(ST.sel===s.id){
+      tx2.strokeStyle='#ffb54d'; tx2.lineWidth=1.5;
+      tx2.strokeRect(s.x-r-7, s.y-r-7, r*2+14, r*2+14);
+    }
   });
-  // list
-  const list=$('stList'); list.innerHTML='';
-  if(!T.stains.length) list.innerHTML='<div style="font-size:12px;color:var(--phos-dim)">Spotless. Suspiciously spotless.</div>';
-  T.stains.forEach(s=>{
-    const d=document.createElement('div');
-    d.className='stain-row'+(T.sel===s.id?' sel':'');
-    const st = s.enzyme>0? 'enzyme dwelling ('+s.enzyme+')' : s.state.toUpperCase();
-    d.innerHTML='<b style="color:'+s.type.hue+'">■</b> '+s.type.name+' — '+st+', size '+Math.round(s.size);
-    d.onclick=()=>{ T.sel=s.id; T_render(); };
-    list.appendChild(d);
-  });
-  const sel = T.stains.find(s=>s.id===T.sel);
-  $('tBlot').disabled = T.over || !sel || T.ap<1 || sel.state!=='fresh' || sel.enzyme>0;
-  $('tEnzyme').disabled = T.over || !sel || T.ap<1 || sel.enzyme>0;
-  $('tScrub').disabled = T.over || !sel || T.ap<1;
-  $('tEnd').disabled = T.over;
+  if(!ST.stains.length){
+    tx2.fillStyle='#2f7a45'; tx2.font='10px monospace';
+    tx2.fillText(T.stClean, 40, 70);
+  }
+  // selected info panel
+  const sel = ST.stains.find(s=>s.id===ST.sel);
+  const info = $('stInfo');
+  if(!sel){
+    info.innerHTML = '<span style="color:var(--phos-dim)">'+T.stNone+'</span>';
+  } else {
+    let badge, rec;
+    if(sel.enzyme>0){ badge='<span class="badge b-enz">'+T.stEnz(sel.enzyme)+'</span>'; rec=T.recEnz(sel.enzyme); }
+    else if(sel.state==='fresh'){ badge='<span class="badge b-fresh">'+T.stFresh+'</span> <span style="color:var(--phos-dim)">('+T.stFreshIn(sel.fresh)+')</span>'; rec=T.recFresh; }
+    else { badge='<span class="badge b-set">'+T.stSet+'</span>'; rec=T.recSet; }
+    info.innerHTML = '<b style="color:'+STYPE_HUE[sel.key]+'">■</b> <b>'+T.stTypes[sel.key]+'</b><br>'+
+      badge+'<br>'+T.stSize+': '+Math.round(sel.size)+'<br>'+
+      '<span class="rec">'+T.stRec+rec+'</span>';
+  }
+  $('tBlot').disabled = ST.over || !sel || ST.ap<1 || sel.state!=='fresh' || sel.enzyme>0;
+  $('tEnzyme').disabled = ST.over || !sel || ST.ap<1 || sel.enzyme>0;
+  $('tScrub').disabled = ST.over || !sel || ST.ap<1;
+  $('tEnd').disabled = ST.over;
 }
+setInterval(()=>{ if(MODE==='stains'&&ST&&!ST.over) T_render(); }, 400);
+tcv.addEventListener('click', e=>{
+  if(MODE!=='stains'||!ST||ST.over) return;
+  const r = tcv.getBoundingClientRect();
+  const mx=(e.clientX-r.left)/r.width*200, my=(e.clientY-r.top)/r.height*140;
+  let best=null, bd=1e9;
+  ST.stains.forEach(s=>{
+    const d=Math.hypot(s.x-mx, s.y-my);
+    if(d<bd && d < clamp(s.size/2,3,16)+9){ bd=d; best=s; }
+  });
+  if(best){ ST.sel=best.id; T_render(); }
+});
 function T_remove(s, how){
-  T.stains = T.stains.filter(x=>x.id!==s.id);
-  if(T.sel===s.id) T.sel = T.stains.length? T.stains[0].id : null;
-  T.cleaned++;
-  log('Stain GONE ('+s.type.name+', '+how+').','good');
+  ST.stains = ST.stains.filter(x=>x.id!==s.id);
+  if(ST.sel===s.id) ST.sel = ST.stains.length? ST.stains[0].id : null;
+  ST.cleaned++;
+  log(T.stGone(T.stTypes[s.key], how),'good');
 }
 $('tBlot').onclick=()=>{
-  const s=T.stains.find(x=>x.id===T.sel); if(!s||T.ap<1) return;
-  T.ap--;
+  const s=ST.stains.find(x=>x.id===ST.sel); if(!s||ST.ap<1) return;
+  ST.ap--;
   s.size*=0.45;
-  if(s.size<4) T_remove(s,'blotted while fresh');
-  else log('Blotted. The stain shrinks to '+Math.round(s.size)+'.','');
+  if(s.size<4) T_remove(s,T.howBlot);
+  else log(T.stBlotted(Math.round(s.size)),'');
   T_render();
 };
 $('tEnzyme').onclick=()=>{
-  const s=T.stains.find(x=>x.id===T.sel); if(!s||T.ap<1) return;
-  T.ap--;
+  const s=ST.stains.find(x=>x.id===ST.sel); if(!s||ST.ap<1) return;
+  ST.ap--;
   s.enzyme=2;
-  log('Enzyme applied to '+s.type.name+'. Now the hard part: leave it alone.','sys');
+  log(T.stEnzApplied(T.stTypes[s.key]),'sys');
   T_render();
 };
 $('tScrub').onclick=()=>{
-  const s=T.stains.find(x=>x.id===T.sel); if(!s||T.ap<1) return;
-  T.ap--;
-  if(s.enzyme>0){ s.enzyme=0; log('⚠ You scrubbed a dwelling enzyme. All that patient chemistry — cancelled.','bad'); }
-  else if(s.state==='fresh'){ s.size*=0.7; log('Scrubbed a fresh stain. It worked, mostly. Size '+Math.round(s.size)+'.',''); if(s.size<4) T_remove(s,'scrubbed'); }
-  else { s.size*=1.4; log('⚠ You scrubbed a set-in stain. It is now a BIGGER set-in stain ('+Math.round(s.size)+'). It felt productive though.','bad'); }
+  const s=ST.stains.find(x=>x.id===ST.sel); if(!s||ST.ap<1) return;
+  ST.ap--;
+  if(s.enzyme>0){ s.enzyme=0; log(T.stScrubEnz,'bad'); }
+  else if(s.state==='fresh'){ s.size*=0.7; if(s.size<4) T_remove(s,T.howScrub); else log(T.stScrubFresh(Math.round(s.size)),''); }
+  else { s.size*=1.4; log(T.stScrubSet(Math.round(s.size)),'bad'); }
   T_render();
 };
 $('tEnd').onclick=()=>{
-  if(T.over) return;
-  // dwell & aging
-  T.stains.slice().forEach(s=>{
+  if(ST.over) return;
+  ST.stains.slice().forEach(s=>{
     if(s.enzyme>0){
       s.enzyme--;
-      if(s.enzyme===0) T_remove(s,'enzyme breakdown');
+      if(s.enzyme===0) T_remove(s,T.howEnzyme);
     } else if(s.state==='fresh'){
       s.fresh--;
-      if(s.fresh<=0){ s.state='set-in'; log(s.type.name+' has SET IN. Enzymes only, now.','warn'); }
+      if(s.fresh<=0){ s.state='set-in'; log(T.stSetIn(T.stTypes[s.key]),'warn'); }
     }
   });
-  T.round++;
-  if(T.round>T.maxRound){
-    T.over=true; T_render();
-    if(T.stains.length<=1){
-      contractComplete('STAIN RESPONSE',
-        '<p>Round 12 over: <span class="win">'+T.stains.length+' stain'+(T.stains.length===1?'':'s')+'</span> left, '+T.cleaned+' defeated.</p>'+
-        '<p>The carpet lives to be ruined another day.</p>');
-    } else {
-      contractFailed('STAIN RESPONSE',
-        '<p>Round 12 over with '+T.stains.length+' stains still on the carpet (needed ≤1). '+T.cleaned+' were defeated, though.</p>',
-        T_start);
-    }
+  ST.round++;
+  if(ST.round>ST.maxRound){
+    ST.over=true; T_render();
+    if(ST.stains.length<=1) contractComplete(T.stWinT, T.stWin(ST.stains.length, ST.cleaned));
+    else contractFailed(T.stWinT, T.stLose(ST.stains.length, ST.cleaned), T_start);
     return;
   }
-  T.ap=2;
-  if(Math.random()<.65){ T_spawn(); log('▸ New stain incoming: '+T.stains[T.stains.length-1].type.name+'!','warn'); }
-  log('— Round '+T.round+' —','sys');
+  ST.ap=2;
+  if(Math.random()<.65){ T_spawn(); log(T.stNew(T.stTypes[ST.stains[ST.stains.length-1].key]),'warn'); }
+  log(T.stRound(ST.round),'sys');
   T_render();
 };
 
 // ================= BOOT =================
+$('bContracts').onclick = contracts;
 (function(){
   const m = new URLSearchParams(location.search).get('mode');
   if(m && ['cats','dogs','vacuum','litter','stains'].includes(m)) startMode(m);
