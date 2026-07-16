@@ -690,12 +690,30 @@ function modal(title, bodyHtml, btns){
   });
   $('ovM').classList.remove('hidden');
 }
+// текущий счёт незавершённой партии (для сабмита при выходе с середины игры)
+function activeScore(){
+  if((MODE==='cats'||MODE==='dogs') && typeof G!=='undefined' && G && !G.over) return {mode:MODE, score:G_score(), end:()=>{G.over=true;}};
+  if(MODE==='vacuum' && typeof V!=='undefined' && V && !V.over) return {mode:'vacuum', score:Math.round(V.got), end:()=>{V.over=true;}};
+  if(MODE==='litter' && typeof L!=='undefined' && L && !L.over) return {mode:'litter', score:L.score, end:()=>{L.over=true;}};
+  if(MODE==='stains' && typeof ST!=='undefined' && ST && !ST.over) return {mode:'stains', score:ST.score, end:()=>{ST.over=true;}};
+  return null;
+}
 function contracts(){
+  const a = activeScore();
+  if(a && a.score>0){ LB_submit(a.mode, a.score); a.end(); }
   MODE = null; clearLog(); hud('');
   showScreen('selScreen');
   log(T.boardLog,'sys');
   LB_load();
 }
+// закрытие/сворачивание вкладки посреди партии: очки не теряются
+window.addEventListener('pagehide', ()=>{
+  const a = activeScore();
+  if(a && a.score>0 && NICK){
+    LB_saveLocal(a.mode, a.score);
+    if(navigator.sendBeacon) navigator.sendBeacon(LB_API, JSON.stringify({nick:NICK, mode:a.mode, score:a.score}));
+  }
+});
 function startMode(mode){
   if(!NICK){ askNick(()=>startMode(mode)); return; }
   MODE = mode; clearLog();
