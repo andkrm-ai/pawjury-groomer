@@ -1,1 +1,10 @@
-{"players":{}}
+{
+ "players": {
+  "__probe2__": {
+   "modes": {
+    "dogs": 3
+   },
+   "updated": "2026-07-16T21:38:48.352Z"
+  }
+ }
+}
