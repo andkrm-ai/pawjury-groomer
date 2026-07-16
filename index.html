@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wasteland Groomer — ретро-игра о питомцах пустоши | PawJury</title>
-<meta name="description" content="Бесплатная ретро-игра в браузере: пять контрактов по уходу за питомцами пустоши — вычёсывайте котов и собак, пылесосьте берлогу, держите запах лотков под контролем и побеждайте пятна энзимами.">
+<meta name="description" content="Бесплатная ретро-игра в браузере: пять контрактов по уходу за питомцами пустоши — вычёсывайте котов и собак, пылесосьте берлогу, держите запах лотков под контролем и побеждайте пятна энзимами. Очки — в общей турнирной таблице.">
 <link rel="canonical" href="https://andkrm-ai.github.io/pawjury-groomer/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://andkrm-ai.github.io/pawjury-groomer/">
 <meta property="og:site_name" content="PawJury">
 <meta property="og:title" content="Wasteland Groomer — ретро-игра о питомцах пустоши">
-<meta property="og:description" content="Пять контрактов в пустоши: грумьте котов и собак, пылесосьте шерсть, контролируйте запах лотков, побеждайте пятна. Бесплатно в браузере.">
+<meta property="og:description" content="Пять контрактов в пустоши: грумьте котов и собак, пылесосьте шерсть, контролируйте запах лотков, побеждайте пятна. Очки со всех режимов — в общей турнирной таблице.">
 <meta name="twitter:card" content="summary">
 <style>
   :root{
@@ -43,7 +43,45 @@
   .hud b{color:var(--phos);text-shadow:0 0 6px rgba(93,255,126,.45)}
   .hud .amber b{color:var(--amber);text-shadow:0 0 6px rgba(255,181,77,.4)}
   main{display:grid;grid-template-columns:1fr 320px;gap:10px}
-  @media(max-width:820px){main{grid-template-columns:1fr}}
+  /* тач/мобилка: всё действие на одном экране — компактные панели, кнопки прилипают снизу */
+  @media(max-width:820px){
+    main{grid-template-columns:1fr}
+    body{font-size:13px}
+    .frame{padding:8px 8px 20px}
+    header{padding:8px 10px;margin-bottom:8px}
+    h1{font-size:13px;letter-spacing:.12em}
+    .hud{gap:8px 12px;font-size:12px}
+    .viewport{min-height:0!important}
+    .panel{padding:8px}
+    .meter{height:8px;margin:1px 0 6px}
+    button{padding:8px 10px;font-size:12px}
+    .log{height:96px;font-size:12px}
+    /* кнопки действий каждого режима — липнут к низу экрана */
+    #groomScreen>.actions,#vacScreen>.actions,#litScreen>.actions,#stainScreen>.actions{
+      position:sticky;bottom:0;z-index:45;background:var(--bg);
+      padding:8px 0;margin-top:8px;border-top:1px solid var(--phos-faint);
+    }
+    /* грумер: питомец и его статы рядом, инструменты — горизонтальная лента на всю ширину */
+    #groomScreen .side{display:contents}
+    #groomScreen main{grid-template-columns:5fr 4fr;gap:8px}
+    #groomScreen .viewport{grid-column:1}
+    #groomScreen .side .panel:first-child{grid-column:2;font-size:12px}
+    #groomScreen .side .panel:last-child{grid-column:1/-1}
+    #cv{width:min(100%,190px)}
+    .tools{flex-direction:row;overflow-x:auto;padding-bottom:4px}
+    .tool{min-width:132px;flex-shrink:0}
+    .tool .tname{font-size:12px}
+    /* лотки: три компактные колонки */
+    .lboxes{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+    .lbox{padding:6px}
+    .lbox h3{font-size:10px;letter-spacing:.1em}
+    .lbox canvas{max-width:110px}
+    .lbox .actions{gap:4px;margin-top:4px}
+    .lbox button{padding:6px 5px;font-size:10px;letter-spacing:.02em}
+    /* пятна: устав компактнее */
+    .stinfo{font-size:11px}
+    .contract{padding:10px}
+  }
   .panel{border:2px solid var(--phos-dim);background:var(--panel);padding:10px}
   .panel h2{
     margin:-10px -10px 8px;padding:5px 10px;font-size:11px;letter-spacing:.3em;font-weight:700;
@@ -137,13 +175,28 @@
   .b-fresh{color:var(--phos);border-color:var(--phos)}
   .b-set{color:var(--red);border-color:var(--red)}
   .b-enz{color:#6fd8ff;border-color:#6fd8ff}
+  /* leaderboard & nick */
+  .lb table{width:100%;border-collapse:collapse;font-size:12px}
+  .lb th,.lb td{text-align:left;padding:3px 6px;border-bottom:1px solid var(--phos-faint)}
+  .lb th{color:var(--phos-dim);font-size:10px;letter-spacing:.2em;text-transform:uppercase}
+  .lb td:last-child,.lb th:last-child{text-align:right}
+  .lb tr.me td{color:var(--amber);text-shadow:0 0 6px rgba(255,181,77,.4)}
+  .lbnote{font-size:11px;color:var(--amber);margin:6px 0 0}
+  input.nick{
+    width:100%;font-family:var(--mono);font-size:15px;letter-spacing:.1em;
+    background:var(--panel2);color:var(--phos);border:2px solid var(--phos-dim);padding:8px 10px;
+  }
+  input.nick:focus{outline:none;border-color:var(--phos)}
+  .advice{font-size:12px;color:var(--amber);margin-top:6px;min-height:16px}
+  .lstatus{font-size:11px;letter-spacing:.08em;margin:2px 0 4px;min-height:14px}
+  .lstatus.ok{color:var(--phos)} .lstatus.warn{color:var(--amber)} .lstatus.full{color:var(--red)}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div class="frame">
   <header>
-    <h1>PAWJURY <small>// WASTELAND GROOMER v0.3</small></h1>
+    <h1>PAWJURY <small>// WASTELAND GROOMER v0.4</small></h1>
     <div class="hud" id="hud"></div>
     <button class="ghost" id="bContracts">◂ Contracts</button>
   </header>
@@ -152,6 +205,11 @@
   <section id="selScreen">
     <p class="boardhead" id="boardhead"></p>
     <div class="board" id="board"></div>
+    <section class="panel lb" style="margin-top:10px">
+      <h2 id="lbTitle"></h2>
+      <div id="lbBody"></div>
+      <div class="actions"><button class="ghost" id="bNick"></button></div>
+    </section>
   </section>
 
   <!-- GROOMER -->
@@ -215,6 +273,7 @@
       <div class="kv"><span id="kOdor"></span><span id="lOdor">0 / 100</span></div>
       <div class="meter" id="mOdorWrap"><i id="mOdor" style="width:0%"></i><span class="mark" style="left:30%"></span></div>
       <div class="kv"><span id="kGuests"></span><span id="lTurns">—</span></div>
+      <div class="advice" id="lAdvice"></div>
       <div class="hint" id="lHint" style="margin-top:6px"></div>
     </section>
     <div class="lboxes" id="lBoxes"></div>
@@ -269,18 +328,33 @@
 const LANG = (document.documentElement.lang||'en').startsWith('ru') ? 'ru' : 'en';
 const STR = {
 en:{
-  boardhead:'The wasteland, 2287. Pets shed, dig, spill and stain — and somebody has to deal with it. Pick a contract from the board. Each one is its own little game.',
+  boardhead:'The wasteland, 2287. Pets shed, dig, spill and stain — and somebody has to deal with it. Every contract is an endless shift: the longer you hold, the harder it gets. Points from all five contracts add up on the guild leaderboard below.',
   contract:'CONTRACT', foot:'A <a href="/">PawJury</a> mini-game. Five contracts, one wasteland, a lot of fur.',
   contracts:'◂ Contracts', boardLog:'Contracts board. Pick a job.',
-  complete:'★ CONTRACT COMPLETE: ', failed:'✖ CONTRACT FAILED: ',
-  back:'Back to contracts', again:'Try again', keep:'Keep playing',
+  failed:'✖ SHIFT OVER: ',
+  back:'Back to contracts', again:'Try again',
   cards:{
-    cats:['Cat Groomer','Brush the vault cats. Every tool has its own temperament — and so does every cat. Collect 500 g of fur: enough to roll a second cat.'],
-    dogs:['Dog Groomer','Bigger clients, bigger coats, bigger mats. Doodles of the wasteland await. Collect 800 g of fur.'],
-    vacuum:['Vacuum Run','One den, one battery charge, fur everywhere — and a cat who does not respect your work. Collect 140 g before the battery dies.'],
-    litter:['Odor Control','Three litter boxes, four cats, guests arriving in 14 turns. Keep the smell below the line of shame.'],
-    stains:['Stain Response','Fresh stains blot out. Set-in stains need enzymes and patience. Scrubbing feels right and makes everything worse. Survive 12 rounds.'],
+    cats:['Cat Groomer','An endless queue of vault cats and a 3-minute shift. Every gram of fur and every cap = points. Clients get crankier as the clock runs. 500 g still rolls a second cat (+500 pts).'],
+    dogs:['Dog Groomer','Same shift, bigger clients: the doodles of the wasteland — more coat, more mats. 3 minutes; 800 g rolls a spare dog (+500 pts).'],
+    vacuum:['Vacuum Run','One battery charge. Fur keeps falling — faster the longer you drive. Every gram is a point. You stop when the battery does.'],
+    litter:['Odor Control','Three boxes, four cats, and the smell that never sleeps. Every turn you survive = points. Odor 100 ends the shift.'],
+    stains:['Stain Response','Stains arrive faster every round. Points for every stain defeated, every round survived. Six stains at once and the carpet is lost.'],
   },
+  // score & leaderboard
+  score:'SCORE', time:'TIME',
+  lbTitle:'Guild leaderboard — all contracts combined',
+  lbLoading:'Contacting the guild ledger…',
+  lbEmpty:'No scores in the ledger yet. Be the first.',
+  lbLocal:'⚠ Guild ledger unreachable — showing scores saved on this device only.',
+  lbRank:'#', lbPlayer:'Groomer', lbTotal:'Points', lbYou:'(you)',
+  bNick:'Change name', nickT:'WASTELAND GROOMING GUILD — SIGN IN',
+  nickBody:'<p>The guild keeps one score ledger for the whole wasteland — every mirror of this terminal writes to it. Sign your work.</p><p>Your handle (2–16 characters):</p>',
+  nickSave:'▸ Sign the ledger',
+  scoreSent:s=>'Score written to the guild ledger: <b>'+s+'</b> pts.',
+  scoreLocal:s=>'Score saved on this device: <b>'+s+'</b> pts (guild ledger unreachable).',
+  newBest:'★ New personal best for this contract!',
+  diffUp:'▲ The wasteland turns up the heat — difficulty increased.',
+  finalScore:s=>'FINAL SCORE: '+s+' pts',
   // groom
   pClient:'Client', pTools:'Tools', kFur:'Fur (remaining)', kPat:'Patience', kTrust:'Trust',
   kCoat:'Coat / size', kTemp:'Temperament', kMats:'Mats', none:'none', empty:'— empty —', noClient:'NO CLIENT',
@@ -292,7 +366,7 @@ en:{
   sizes:{small:'small',medium:'medium',large:'large'}, coats:{short:'short',long:'long'},
   temps:{chill:'chill',normal:'average',skittish:'skittish'},
   gIntroT:sp=>sp+' — THE WASTELAND, 2287',
-  gIntro:(mode,win)=>'<p>You are a wandering groomer. Vault dwellers pay caps for de-shedded undercoat, and the fur you collect can be rolled into a <span class="win">'+(mode==='cats'?'SECOND CAT':'SPARE DOG')+'</span> ('+win+' g needed).</p><p>Every tool has its own temperament: one strips heroic amounts of fur but can leave <span style="color:var(--red)">bald spots</span>, one tires your hand, one lets fur slip through, one sends it flying all over the floor — a Shark vacuum picks that up.</p><p>Actions cost energy. When a client\'s patience runs out, the session ends. If trust drops below 10, they bolt — no payment.</p>',
+  gIntro:(mode,win)=>'<p>You are a wandering groomer on a <span class="win">3-minute shift</span>. Every gram of fur brushed and every cap earned is <b>points</b>; the clock only runs while you work — shopping is free.</p><p>Every tool has its own temperament: one strips heroic amounts of fur but can leave <span style="color:var(--red)">bald spots</span>, one tires your hand, one lets fur slip through, one sends it flying all over the floor — a Shark vacuum picks that up.</p><p>Actions cost energy. When a client\'s patience runs out, the session ends; trust below 10 and they bolt without paying. The longer the shift runs, the crankier the clients arrive. Collect '+win+' g total and the vault rolls a <span class="win">'+(mode==='cats'?'SECOND CAT':'SPARE DOG')+'</span> — worth +500 pts.</p>',
   gOpenShop:'▸ Open the trading post', gAccepted:t=>t+' contract accepted.',
   shopT:'"EVERYTHING MUST GROOM" TRADING POST',
   shopHead:m=>'<p style="color:var(--phos-dim)">Caps: <span class="win">$'+m+'</span>. Counterfeits roam the wasteland — buy from someone you trust.</p><div id="shopList"></div>',
@@ -339,8 +413,8 @@ en:{
   dayStart:(d,n)=>'═══ DAY '+d+' ═══ Clients in the queue: '+n+'.',
   dayOver:'Day over. The wasteland wind chases fur across your tent.',
   gWinT:{cats:'CAT GROOMER',dogs:'DOG GROOMER'},
-  gWin:(mode,win,day,total,bald)=>'<p class="win" style="font-size:16px">"'+(mode==='cats'?'ENOUGH FUR FOR A SECOND CAT':'ENOUGH FUR FOR A SPARE DOG')+'"</p><p>You collected '+win+' g of undercoat and rolled a brand-new companion. The wasteland provides.</p><p style="color:var(--phos-dim)">Days: '+day+' · Clients served: '+total+' · Bald-spot incidents: '+bald+'</p>',
-  gWinLog:w=>'★★★ '+w+' g REACHED. Contract complete. ★★★',
+  shiftEnd:(score,fur,earned,served,bald)=>'<p class="win" style="font-size:16px">TIME.</p><p>Score: <span class="win">'+score+' pts</span> — '+fur+' g of fur, $'+earned+' earned, clients served: '+served+'.</p><p style="color:var(--phos-dim)">Bald-spot incidents: '+bald+'</p>',
+  gBonus:(w,mode)=>'★★★ '+w+' g REACHED — enough fur for a '+(mode==='cats'?'SECOND CAT':'SPARE DOG')+'! +500 pts. The shift continues. ★★★',
   tools:{
     furm:['FURminator deShedding','Strips a shocking amount of undercoat per pass. Over-brushing risks bald spots. Static. The eject button is mostly decorative.'],
     hertzko:['Hertzko Slicker (small)','The budget classic with a self-clean button — which you have to hold down the whole time. Gentle. Clumsy on small animals.'],
@@ -355,21 +429,31 @@ en:{
   // vacuum
   kBat:'Battery', kGot:'Collected', vHint:'Click a tile — the vacuum drives there, sucking up everything on the way. Furniture blocks the path.',
   vGiveUp:'Abandon run', vTitle:'VACUUM RUN — ONE CHARGE, ONE DEN',
-  vIntro:t=>'<p>A vault dweller\'s den, ankle-deep in pet fur. Your Shark has <span class="win">one battery charge</span>.</p><p>Click a tile — the vacuum drives there (1% battery per tile) and sucks up everything on the way. Big tufts can jam the brush roll (−5%). The sofa hides the best tufts underneath its edge.</p><p>The resident cat is asleep. Wake it and it darts off, shedding as it goes. Collect <span class="win">'+t+' g</span> before the battery dies.</p>',
+  vIntro:()=>'<p>A vault dweller\'s den, ankle-deep in pet fur — and it <span class="win">keeps falling</span>, faster the longer you drive. Every gram sucked up is a point.</p><p>Click a tile — the vacuum drives there (1% battery per tile) and sucks up everything on the way. Big tufts can jam the brush roll (−5%). The sofa hides the best tufts underneath its edge.</p><p>The resident cat is asleep. Wake it and it darts off, shedding as it goes. The run ends when the <span class="win">battery</span> does.</p>',
   vPowerOn:'▸ Power on', vStarted:'Vacuum Run started. The Shark hums to life.',
   vSucked:g=>'Sucked up '+g+' g.', vJam:g=>'Hairball JAM on a big tuft ('+g+' g)! Cleared the brush roll (−5% battery).',
   vPanic:'The cat WAKES UP in a panic and darts across the den, shedding as it goes!',
-  vWin:(got,bat)=>'<p>Den cleared: <span class="win">'+got+' g</span> of fur with '+bat+'% battery to spare.</p><p>The resident cat pretends nothing happened.</p>',
-  vLose:(got,t)=>'<p>The battery died at '+got+' g of '+t+'. The fur reclaims its territory.</p>',
+  vEnd:got=>'<p>Battery dead. <span class="win">'+got+' g</span> of fur in the tank — every gram a point.</p><p>The fur, of course, keeps falling.</p>',
+  vFaster:'▲ The shedding is speeding up.',
   vAbandon:g=>'<p>Run abandoned at '+g+' g.</p>',
   vTitleShort:'VACUUM RUN',
   // litter
-  pAir:'Den air quality', kOdor:'Odor (keep under 30)', kGuests:'Guests arrive in',
-  turns:n=>n+' turns', lVent:n=>'Ventilate −15 odor ('+n+' left)', lWait:'Do nothing',
-  lHint:'One action per turn — then the cats take theirs. A box over 80% full gets bypassed… with consequences.',
-  lBox:'BOX', lLoad:'load', lStinks:'adds odor every turn!', lScoop:'Scoop −40%', lFresh:n=>'Fresh litter ('+n+')',
-  lTitle:'ODOR CONTROL — GUESTS IN 14 TURNS',
-  lIntro:'<p>Three litter boxes. Four cats. Guests arriving for dinner in <span class="win">14 turns</span>.</p><p>Each turn you take <b>one action</b>: scoop a box (−40% fill), refresh one with clean litter (2 bags total, box to 0% and −8 odor), ventilate (−15 odor, 3 uses), or do nothing. Then the cats take their turn.</p><p>Boxes over 50% quietly leak odor. A box over 80% gets <b>bypassed</b> — the cat goes… nearby (+8 odor). Win: odor below <span class="win">30</span> when the guests walk in.</p>',
+  pAir:'Den air quality', kOdor:'Odor — 100 ends the game', kGuests:'Turns survived',
+  turns:n=>String(n), lVent:n=>'Ventilate −15 odor ('+n+' left)', lWait:'Do nothing',
+  lHint:'One action per turn — then the cats take theirs. Supplies restock over time: +1 vent charge every 4 turns, +1 litter bag every 6.',
+  lBox:'BOX', lLoad:'load', lScoop:'Scoop −40%', lFresh:n=>'Fresh litter ('+n+')',
+  lStatus:{ok:'✓ CLEAN', warn:'⚠ SMELLY — adds odor every turn', full:'✖ OVERFULL — cats will go NEXT TO it!'},
+  lAdvice:{
+    full:i=>'▸ DO THIS: box '+(i+1)+' is overfull — a cat will go NEXT TO it (+8 odor). Scoop it.',
+    vent:'▸ DO THIS: odor is critical — ventilate (−15).',
+    warn:i=>'▸ Suggestion: box '+(i+1)+' leaks odor every turn. Scoop it before it overflows.',
+    ok:'▸ All under control. "Do nothing" is a fine move — supplies restock over time.',
+  },
+  lDelta:(t,parts)=>'Odor this turn: +'+t+' ('+parts+')',
+  lPartBoxes:'smelly boxes', lPartBase:'background', lPartBypass:'bypass', lPartStomach:'rough stomach',
+  lRegenVent:'Supplies: +1 ventilation charge.', lRegenLitter:'Supplies: +1 bag of fresh litter.',
+  lTitle:'ODOR CONTROL — HOW LONG CAN YOU BREATHE?',
+  lIntro:'<p>Three litter boxes. Four cats. No guests coming to save you — just you, the boxes, and the <span class="win">odor meter</span>. Survive as many turns as you can: every turn is <b>+10 pts</b> (+5 more while odor is under 30). Odor at <span class="win">100</span> ends the game.</p><p>Each turn, <b>one action</b>: scoop a box (−40% fill), refresh with clean litter (box to 0% and −8 odor), ventilate (−15 odor), or do nothing. Then the cats take their turn. The panel above always tells you the <span class="win">recommended move</span>.</p><p>Box states: <b>✓ CLEAN</b> is fine · <b>⚠ SMELLY</b> (50%+) adds odor every turn · <b>✖ OVERFULL</b> (80%+) makes cats go <b>next to it</b> (+8 odor). More cats show up as turns pass.</p>',
   lBreath:'▸ Take a deep breath', lStarted:'Odor Control started. It is not too bad. Yet.',
   lScooped:i=>'Scooped box '+(i+1)+'. Honest work.',
   lFreshed:i=>'Box '+(i+1)+': full refresh with clean litter. The den breathes easier (−8 odor).',
@@ -381,8 +465,7 @@ en:{
   lStomach:'⚠ Someone had a rough stomach. No further questions. (+6 odor)',
   lTurnBegins:n=>'— Turn '+n+' (your move) —',
   lWinT:'ODOR CONTROL',
-  lWin:o=>'<p>The guests walk in… and smell <span class="win">nothing</span>. Odor: '+o+'/100.</p><p>"Wait, you have FOUR cats?" Highest praise in the wasteland.</p>',
-  lLose:o=>'<p>The guests walk in and their faces say everything. Odor: '+o+'/100 (needed &lt;30).</p>',
+  lEnd:(turns,score)=>'<p>Odor hit 100 on turn '+turns+'. The den is officially uninhabitable — even the cats moved out.</p><p>Score: <span class="win">'+score+' pts</span>.</p>',
   // stains
   pSel:'Selected stain', pManual:'Field manual',
   stManual:'<b>FRESH</b> → blot it, fast (−55% size).<br><b class="b-set" style="border:0;padding:0">SET-IN</b> → enzyme, then leave it alone 2 rounds.<br>Scrubbing spreads set-in stains and cancels dwelling enzyme.<br>2 actions per round. Click a stain on the carpet to select it.',
@@ -394,8 +477,8 @@ en:{
   stFreshIn:n=>'sets in after '+n+' more round'+(n===1?'':'s'),
   stSize:'size', stRec:'Manual says: ',
   recFresh:'blot it NOW.', recSet:'apply enzyme, then hands off.', recEnz:n=>'do NOT touch for '+n+' more round'+(n===1?'':'s')+'.',
-  stTitle:'STAIN RESPONSE — 12 ROUNDS ON THE CARPET',
-  stIntro:'<p>The den\'s only carpet is under attack. Stains arrive fresh, then <span class="win">set in</span> if ignored.</p><p><b>FRESH</b> stains: blot immediately. <b>SET-IN</b> stains: apply enzyme and let it dwell two rounds — do not touch it while it works. Scrubbing spreads set-in stains and cancels dwelling enzyme. You have 2 actions per round.</p><p>Win: at most <span class="win">1 stain</span> left after round 12. Click stains on the carpet to select them.</p>',
+  stTitle:'STAIN RESPONSE — THE CARPET NEVER SLEEPS',
+  stIntro:'<p>The den\'s only carpet is under attack — and the attack <span class="win">never stops</span>. Stains arrive faster every round. Each stain defeated is <b>+25 pts</b>, each round survived <b>+5 pts</b>.</p><p><b>FRESH</b> stains: blot immediately. <b>SET-IN</b> stains: apply enzyme and let it dwell two rounds — do not touch it while it works. Scrubbing spreads set-in stains and cancels dwelling enzyme. You have 2 actions per round.</p><p>Game over when <span class="win">6 stains</span> sit on the carpet at the end of a round. Click stains on the carpet to select them.</p>',
   stTowels:'▸ Grab the towels', stStarted:'Stain Response started. Round 1.',
   stGone:(t,how)=>'Stain GONE ('+t+', '+how+').',
   howBlot:'blotted while fresh', howScrub:'scrubbed', howEnzyme:'enzyme breakdown',
@@ -408,22 +491,37 @@ en:{
   stNew:t=>'▸ New stain incoming: '+t+'!',
   stRound:n=>'— Round '+n+' —',
   stWinT:'STAIN RESPONSE',
-  stWin:(left,cleaned)=>'<p>Round 12 over: <span class="win">'+left+' stain'+(left===1?'':'s')+'</span> left, '+cleaned+' defeated.</p><p>The carpet lives to be ruined another day.</p>',
-  stLose:(left,cleaned)=>'<p>Round 12 over with '+left+' stains still on the carpet (needed ≤1). '+cleaned+' were defeated, though.</p>',
+  stFaster:'▲ Stains are arriving faster.',
+  stEnd:(rounds,cleaned,score)=>'<p>Six stains at once — the carpet is officially lost. You held <span class="win">'+rounds+' rounds</span> and defeated '+cleaned+' stains.</p><p>Score: <span class="win">'+score+' pts</span>.</p>',
 },
 ru:{
-  boardhead:'Пустошь, 2287 год. Питомцы линяют, копают, разливают и оставляют пятна — и кто-то должен с этим разбираться. Выберите контракт с доски. Каждый — своя маленькая игра.',
+  boardhead:'Пустошь, 2287 год. Питомцы линяют, копают, разливают и оставляют пятна — и кто-то должен с этим разбираться. Каждый контракт — бесконечная смена: чем дольше держитесь, тем сложнее. Очки со всех пяти контрактов суммируются в турнирной таблице гильдии ниже.',
   contract:'КОНТРАКТ', foot:'Мини-игра <a href="https://pawjury.com/">PawJury</a>. Пять контрактов, одна пустошь, очень много шерсти.',
   contracts:'◂ Контракты', boardLog:'Доска контрактов. Выбирайте работу.',
-  complete:'★ КОНТРАКТ ВЫПОЛНЕН: ', failed:'✖ КОНТРАКТ ПРОВАЛЕН: ',
-  back:'К контрактам', again:'Ещё раз', keep:'Продолжить играть',
+  failed:'✖ СМЕНА ОКОНЧЕНА: ',
+  back:'К контрактам', again:'Ещё раз',
   cards:{
-    cats:['Кошачий грумер','Вычёсывайте котов убежища. У каждого инструмента свой характер — как и у каждого кота. Соберите 500 г шерсти: хватит скатать второго кота.'],
-    dogs:['Собачий грумер','Клиенты крупнее, шерсти больше, колтуны серьёзнее. Дудли пустоши ждут. Соберите 800 г шерсти.'],
-    vacuum:['Пылесосный рейд','Одна берлога, один заряд батареи, шерсть повсюду — и кот, не уважающий ваш труд. Соберите 140 г до разряда.'],
-    litter:['Контроль запаха','Три лотка, четыре кота, гости через 14 ходов. Удержите запах ниже границы позора.'],
-    stains:['Отряд по пятнам','Свежие пятна промакиваются. Засевшие требуют энзимов и терпения. Тереть приятно — и только хуже. Продержитесь 12 раундов.'],
+    cats:['Кошачий грумер','Бесконечная очередь котов убежища и смена на 3 минуты. Каждый грамм шерсти и каждая крышка = очки. Чем дальше, тем нервнее клиенты. 500 г по-прежнему скатывают второго кота (+500 очков).'],
+    dogs:['Собачий грумер','Та же смена, клиенты крупнее: дудли пустоши — шерсти больше, колтуны серьёзнее. 3 минуты; 800 г — запасной пёс (+500 очков).'],
+    vacuum:['Пылесосный рейд','Один заряд батареи. Шерсть падает не переставая — и чем дольше ездите, тем быстрее. Каждый грамм — очко. Остановитесь вместе с батареей.'],
+    litter:['Контроль запаха','Три лотка, четыре кота и запах, который не спит. Каждый выдержанный ход = очки. Запах 100 — конец смены.'],
+    stains:['Отряд по пятнам','Пятна прибывают всё быстрее. Очки за каждое побеждённое пятно и каждый раунд. Шесть пятен разом — и ковёр потерян.'],
   },
+  // очки и таблица
+  score:'ОЧКИ', time:'ВРЕМЯ',
+  lbTitle:'Турнирная таблица гильдии — все контракты вместе',
+  lbLoading:'Связь с реестром гильдии…',
+  lbEmpty:'В реестре пока пусто. Будьте первым.',
+  lbLocal:'⚠ Реестр гильдии недоступен — показаны только очки с этого устройства.',
+  lbRank:'#', lbPlayer:'Грумер', lbTotal:'Очки', lbYou:'(вы)',
+  bNick:'Сменить имя', nickT:'ГИЛЬДИЯ ГРУМЕРОВ ПУСТОШИ — РЕГИСТРАЦИЯ',
+  nickBody:'<p>Гильдия ведёт один реестр очков на всю пустошь — оба зеркала этого терминала пишут в него. Подпишите свою работу.</p><p>Ваш позывной (2–16 символов):</p>',
+  nickSave:'▸ Вписаться в реестр',
+  scoreSent:s=>'Очки записаны в реестр гильдии: <b>'+s+'</b>.',
+  scoreLocal:s=>'Очки сохранены на этом устройстве: <b>'+s+'</b> (реестр недоступен).',
+  newBest:'★ Новый личный рекорд в этом контракте!',
+  diffUp:'▲ Пустошь поддаёт жару — сложность выросла.',
+  finalScore:s=>'ИТОГОВЫЙ СЧЁТ: '+s+' очков',
   pClient:'Клиент', pTools:'Инструменты', kFur:'Шерсть (осталось)', kPat:'Терпение', kTrust:'Доверие',
   kCoat:'Шерсть / размер', kTemp:'Характер', kMats:'Колтуны', none:'нет', empty:'— пусто —', noClient:'НЕТ КЛИЕНТА',
   undercoat:' + подшёрсток', clientsLeft:n=>' (клиентов сегодня ещё: '+n+')',
@@ -434,7 +532,7 @@ ru:{
   sizes:{small:'мелкий',medium:'средний',large:'крупный'}, coats:{short:'короткая',long:'длинная'},
   temps:{chill:'флегма',normal:'обычный',skittish:'нервный'},
   gIntroT:sp=>sp+' — ПУСТОШЬ, 2287',
-  gIntro:(mode,win)=>'<p>Вы — странствующий грумер. Жители убежищ платят крышками за вычесанный подшёрсток, а из собранной шерсти можно скатать <span class="win">'+(mode==='cats'?'ВТОРОГО КОТА':'ЗАПАСНОГО ПСА')+'</span> (нужно '+win+' г).</p><p>У каждого инструмента свой характер: один снимает героические объёмы, но оставляет <span style="color:var(--red)">лысые пятна</span>, у другого устаёт рука, третий пропускает шерсть, четвёртый разбрасывает её по полу — пылесос Shark это подберёт.</p><p>Действия тратят силы. Кончится терпение клиента — сессия окончена. Доверие ниже 10 — сбежит без оплаты.</p>',
+  gIntro:(mode,win)=>'<p>Вы — странствующий грумер на <span class="win">трёхминутной смене</span>. Каждый вычесанный грамм и каждая заработанная крышка — <b>очки</b>; часы идут только пока вы работаете — покупки бесплатны.</p><p>У каждого инструмента свой характер: один снимает героические объёмы, но оставляет <span style="color:var(--red)">лысые пятна</span>, у другого устаёт рука, третий пропускает шерсть, четвёртый разбрасывает её по полу — пылесос Shark это подберёт.</p><p>Действия тратят силы. Кончится терпение клиента — сессия окончена; доверие ниже 10 — сбежит без оплаты. Чем дольше идёт смена, тем нервнее приходят клиенты. Соберите '+win+' г — и убежище скатает <span class="win">'+(mode==='cats'?'ВТОРОГО КОТА':'ЗАПАСНОГО ПСА')+'</span> (+500 очков).</p>',
   gOpenShop:'▸ Открыть лавку', gAccepted:t=>'Контракт принят: '+t+'.',
   shopT:'ЛАВКА «ВСЁ ДЛЯ ГРУМИНГА»',
   shopHead:m=>'<p style="color:var(--phos-dim)">Крышки: <span class="win">$'+m+'</span>. По пустоши ходят подделки — покупайте у тех, кому доверяете.</p><div id="shopList"></div>',
@@ -481,8 +579,8 @@ ru:{
   dayStart:(d,n)=>'═══ ДЕНЬ '+d+' ═══ Клиентов в очереди: '+n+'.',
   dayOver:'День окончен. Ветер пустоши гоняет шерсть по палатке.',
   gWinT:{cats:'КОШАЧИЙ ГРУМЕР',dogs:'СОБАЧИЙ ГРУМЕР'},
-  gWin:(mode,win,day,total,bald)=>'<p class="win" style="font-size:16px">«'+(mode==='cats'?'ШЕРСТИ ХВАТИТ НА ВТОРОГО КОТА':'ШЕРСТИ ХВАТИТ НА ЗАПАСНОГО ПСА')+'»</p><p>Вы собрали '+win+' г подшёрстка и скатали нового компаньона. Пустошь даёт.</p><p style="color:var(--phos-dim)">Дней: '+day+' · Клиентов обслужено: '+total+' · Лысых инцидентов: '+bald+'</p>',
-  gWinLog:w=>'★★★ '+w+' г НАБРАНО. Контракт выполнен. ★★★',
+  shiftEnd:(score,fur,earned,served,bald)=>'<p class="win" style="font-size:16px">ВРЕМЯ.</p><p>Счёт: <span class="win">'+score+' очков</span> — '+fur+' г шерсти, заработано $'+earned+', клиентов обслужено: '+served+'.</p><p style="color:var(--phos-dim)">Лысых инцидентов: '+bald+'</p>',
+  gBonus:(w,mode)=>'★★★ '+w+' г НАБРАНО — шерсти хватит на '+(mode==='cats'?'ВТОРОГО КОТА':'ЗАПАСНОГО ПСА')+'! +500 очков. Смена продолжается. ★★★',
   tools:{
     furm:['FURminator deShedding','Снимает шокирующий объём подшёрстка за проход. При перебрушивании — лысые пятна. Статика. Кнопка выброса скорее декоративная.'],
     hertzko:['Hertzko Slicker (small)','Народная классика с кнопкой самоочистки — которую надо держать всё время. Мягкая. Неуклюжа на мелких животных.'],
@@ -496,20 +594,30 @@ ru:{
   dogNames:['Псина','Рекс','Бумер','Рад-Ровер','Сержант','Бисквит','Барбос','Утиль','Волт-Бой','Вой','Бандит','Рейнджер'],
   kBat:'Батарея', kGot:'Собрано', vHint:'Кликните тайл — пылесос поедет туда, всасывая всё по пути. Мебель объезжает.',
   vGiveUp:'Бросить рейд', vTitle:'ПЫЛЕСОСНЫЙ РЕЙД — ОДИН ЗАРЯД, ОДНА БЕРЛОГА',
-  vIntro:t=>'<p>Берлога жителя убежища, по щиколотку в шерсти. У вашего Shark <span class="win">один заряд батареи</span>.</p><p>Кликните тайл — пылесос поедет туда (1% батареи за тайл), всасывая всё по пути. Большие клоки заклинивают щётку (−5%). Лучшие клоки прячутся у края дивана.</p><p>Местный кот спит. Разбудите — рванёт через комнату, линяя на ходу. Соберите <span class="win">'+t+' г</span> до разряда.</p>',
+  vIntro:()=>'<p>Берлога жителя убежища, по щиколотку в шерсти — и она <span class="win">продолжает падать</span>, чем дольше ездите, тем быстрее. Каждый всосанный грамм — очко.</p><p>Кликните тайл — пылесос поедет туда (1% батареи за тайл), всасывая всё по пути. Большие клоки заклинивают щётку (−5%). Лучшие клоки прячутся у края дивана.</p><p>Местный кот спит. Разбудите — рванёт через комнату, линяя на ходу. Рейд закончится вместе с <span class="win">батареей</span>.</p>',
   vPowerOn:'▸ Включить', vStarted:'Рейд начался. Shark оживает с гулом.',
   vSucked:g=>'Всосано '+g+' г.', vJam:g=>'ЗАКЛИНИЛО на большом клоке ('+g+' г)! Щётка прочищена (−5% батареи).',
   vPanic:'Кот ПРОСЫПАЕТСЯ в панике и мчится через берлогу, линяя на ходу!',
-  vWin:(got,bat)=>'<p>Берлога чиста: <span class="win">'+got+' г</span> шерсти, осталось '+bat+'% батареи.</p><p>Местный кот делает вид, что ничего не было.</p>',
-  vLose:(got,t)=>'<p>Батарея села на '+got+' г из '+t+'. Шерсть возвращает себе территорию.</p>',
+  vEnd:got=>'<p>Батарея села. В баке <span class="win">'+got+' г</span> шерсти — каждый грамм в зачёт.</p><p>Шерсть, разумеется, продолжает падать.</p>',
+  vFaster:'▲ Линька ускоряется.',
   vAbandon:g=>'<p>Рейд брошен на '+g+' г.</p>',
   vTitleShort:'ПЫЛЕСОСНЫЙ РЕЙД',
-  pAir:'Воздух в берлоге', kOdor:'Запах (держать ниже 30)', kGuests:'Гости придут через',
-  turns:n=>n+' ходов', lVent:n=>'Проветрить −15 запаха (осталось '+n+')', lWait:'Ничего не делать',
-  lHint:'Одно действие за ход — потом ходят коты. Лоток полнее 80% кот обойдёт стороной… с последствиями.',
-  lBox:'ЛОТОК', lLoad:'заполнен', lStinks:'добавляет запах каждый ход!', lScoop:'Убрать −40%', lFresh:n=>'Свежий наполнитель ('+n+')',
-  lTitle:'КОНТРОЛЬ ЗАПАХА — ГОСТИ ЧЕРЕЗ 14 ХОДОВ',
-  lIntro:'<p>Три лотка. Четыре кота. Гости придут на ужин через <span class="win">14 ходов</span>.</p><p>Каждый ход — <b>одно действие</b>: убрать из лотка (−40% заполнения), засыпать свежий наполнитель (всего 2 пакета, лоток в 0% и −8 запаха), проветрить (−15 запаха, 3 раза) или ничего не делать. Потом ходят коты.</p><p>Лотки полнее 50% тихо добавляют запах. Лоток полнее 80% кот <b>обойдёт</b> — и сходит… рядом (+8 запаха). Победа: запах ниже <span class="win">30</span>, когда войдут гости.</p>',
+  pAir:'Воздух в берлоге', kOdor:'Запах — на 100 игра окончена', kGuests:'Ходов выдержано',
+  turns:n=>String(n), lVent:n=>'Проветрить −15 запаха (осталось '+n+')', lWait:'Ничего не делать',
+  lHint:'Одно действие за ход — потом ходят коты. Припасы пополняются: +1 проветривание каждые 4 хода, +1 пакет наполнителя каждые 6.',
+  lBox:'ЛОТОК', lLoad:'заполнен', lScoop:'Убрать −40%', lFresh:n=>'Свежий наполнитель ('+n+')',
+  lStatus:{ok:'✓ ЧИСТО', warn:'⚠ ПАХНЕТ — добавляет запах каждый ход', full:'✖ ПЕРЕПОЛНЕН — коты сходят РЯДОМ!'},
+  lAdvice:{
+    full:i=>'▸ СДЕЛАЙТЕ ЭТО: лоток '+(i+1)+' переполнен — кот сходит РЯДОМ (+8 запаха). Уберите его.',
+    vent:'▸ СДЕЛАЙТЕ ЭТО: запах критический — проветрите (−15).',
+    warn:i=>'▸ Совет: лоток '+(i+1)+' добавляет запах каждый ход. Уберите, пока не переполнился.',
+    ok:'▸ Всё под контролем. «Ничего не делать» — нормальный ход: припасы копятся со временем.',
+  },
+  lDelta:(t,parts)=>'Запах за ход: +'+t+' ('+parts+')',
+  lPartBoxes:'пахнущие лотки', lPartBase:'фон', lPartBypass:'мимо лотка', lPartStomach:'живот',
+  lRegenVent:'Припасы: +1 проветривание.', lRegenLitter:'Припасы: +1 пакет наполнителя.',
+  lTitle:'КОНТРОЛЬ ЗАПАХА — СКОЛЬКО ПРОДЫШИТЕ?',
+  lIntro:'<p>Три лотка. Четыре кота. Гостей, которые всё это остановят, не будет — только вы, лотки и <span class="win">шкала запаха</span>. Держитесь как можно дольше: каждый ход — <b>+10 очков</b> (+5 сверху, пока запах ниже 30). Запах <span class="win">100</span> — конец игры.</p><p>Каждый ход — <b>одно действие</b>: убрать из лотка (−40% заполнения), заменить наполнитель (лоток в 0% и −8 запаха), проветрить (−15 запаха) или ничего не делать. Потом ходят коты. Панель сверху всегда подсказывает <span class="win">рекомендованный ход</span>.</p><p>Состояния лотков: <b>✓ ЧИСТО</b> — порядок · <b>⚠ ПАХНЕТ</b> (50%+) — добавляет запах каждый ход · <b>✖ ПЕРЕПОЛНЕН</b> (80%+) — кот сходит <b>рядом</b> (+8 запаха). С каждым ходом котов приходит всё больше.</p>',
   lBreath:'▸ Вдохнуть поглубже', lStarted:'Контроль запаха начался. Пока терпимо. Пока.',
   lScooped:i=>'Убрано из лотка '+(i+1)+'. Честный труд.',
   lFreshed:i=>'Лоток '+(i+1)+': полная замена наполнителя. Дышать легче (−8 запаха).',
@@ -521,8 +629,7 @@ ru:{
   lStomach:'⚠ У кого-то прихватило живот. Без лишних вопросов. (+6 запаха)',
   lTurnBegins:n=>'— Ход '+n+' (ваш ход) —',
   lWinT:'КОНТРОЛЬ ЗАПАХА',
-  lWin:o=>'<p>Гости входят… и не чувствуют <span class="win">ничего</span>. Запах: '+o+'/100.</p><p>«Стоп, у вас ЧЕТЫРЕ кота?» Высшая похвала в пустоши.</p>',
-  lLose:o=>'<p>Гости входят, и их лица говорят всё. Запах: '+o+'/100 (нужно было &lt;30).</p>',
+  lEnd:(turns,score)=>'<p>Запах достиг 100 на ходу '+turns+'. Берлога официально непригодна для жизни — даже коты съехали.</p><p>Счёт: <span class="win">'+score+' очков</span>.</p>',
   pSel:'Выбранное пятно', pManual:'Полевой устав',
   stManual:'<b>СВЕЖЕЕ</b> → промакивать, быстро (−55% размера).<br><b class="b-set" style="border:0;padding:0">ЗАСЕВШЕЕ</b> → энзим, потом не трогать 2 раунда.<br>Тереть засевшее — размажете; тереть энзим — отмените химию.<br>2 действия за раунд. Кликните пятно на ковре, чтобы выбрать.',
   stNone:'Кликните пятно на ковре.', stClean:'Чисто. Подозрительно чисто.',
@@ -533,8 +640,8 @@ ru:{
   stFreshIn:n=>'засядет через '+n+' раунд'+(n===1?'':'а'),
   stSize:'размер', stRec:'Устав говорит: ',
   recFresh:'промакивать НЕМЕДЛЕННО.', recSet:'нанести энзим и убрать руки.', recEnz:n=>'НЕ трогать ещё '+n+' раунд'+(n===1?'':'а')+'.',
-  stTitle:'ОТРЯД ПО ПЯТНАМ — 12 РАУНДОВ НА КОВРЕ',
-  stIntro:'<p>Единственный ковёр берлоги атакован. Пятна появляются свежими, а если их игнорировать — <span class="win">засядут</span>.</p><p><b>СВЕЖИЕ</b> пятна: промакивать немедленно. <b>ЗАСЕВШИЕ</b>: нанести энзим и дать поработать два раунда — не трогать, пока работает. Тереть засевшее — размажете, тереть энзим — отмените. 2 действия за раунд.</p><p>Победа: не больше <span class="win">1 пятна</span> после 12-го раунда. Пятна выбираются кликом по ковру.</p>',
+  stTitle:'ОТРЯД ПО ПЯТНАМ — КОВЁР НЕ СПИТ',
+  stIntro:'<p>Единственный ковёр берлоги атакован — и атака <span class="win">не прекращается</span>. С каждым раундом пятна прибывают быстрее. Каждое побеждённое пятно — <b>+25 очков</b>, каждый раунд — <b>+5 очков</b>.</p><p><b>СВЕЖИЕ</b> пятна: промакивать немедленно. <b>ЗАСЕВШИЕ</b>: нанести энзим и дать поработать два раунда — не трогать, пока работает. Тереть засевшее — размажете, тереть энзим — отмените. 2 действия за раунд.</p><p>Игра окончена, когда в конце раунда на ковре <span class="win">6 пятен</span>. Пятна выбираются кликом по ковру.</p>',
   stTowels:'▸ Хватать полотенца', stStarted:'Отряд по пятнам приступил. Раунд 1.',
   stGone:(t,how)=>'Пятно ИСЧЕЗЛО ('+t+', '+how+').',
   howBlot:'промокнули свежим', howScrub:'оттёрли', howEnzyme:'энзим доел',
@@ -547,8 +654,8 @@ ru:{
   stNew:t=>'▸ Новое пятно: '+t+'!',
   stRound:n=>'— Раунд '+n+' —',
   stWinT:'ОТРЯД ПО ПЯТНАМ',
-  stWin:(left,cleaned)=>'<p>12 раундов позади: осталось <span class="win">'+left+'</span> пятен, побеждено '+cleaned+'.</p><p>Ковёр доживёт до следующего разгрома.</p>',
-  stLose:(left,cleaned)=>'<p>12 раундов позади, а на ковре ещё '+left+' пятен (нужно ≤1). Зато '+cleaned+' побеждено.</p>',
+  stFaster:'▲ Пятна прибывают быстрее.',
+  stEnd:(rounds,cleaned,score)=>'<p>Шесть пятен разом — ковёр официально потерян. Вы продержались <span class="win">'+rounds+' раундов</span> и победили '+cleaned+' пятен.</p><p>Счёт: <span class="win">'+score+' очков</span>.</p>',
 },
 };
 const T = STR[LANG];
@@ -585,19 +692,91 @@ function contracts(){
   MODE = null; clearLog(); hud('');
   showScreen('selScreen');
   log(T.boardLog,'sys');
+  LB_load();
 }
 function startMode(mode){
+  if(!NICK){ askNick(()=>startMode(mode)); return; }
   MODE = mode; clearLog();
   if(mode==='cats'||mode==='dogs') G_start(mode);
   else if(mode==='vacuum') V_start();
   else if(mode==='litter') L_start();
   else if(mode==='stains') T_start();
 }
-function contractComplete(title, body){
-  modal(T.complete+title+' ★', body, [[T.back, contracts], [T.keep, null, 'ghost']]);
-}
-function contractFailed(title, body, retryFn){
+function modalOpen(){ return !$('ovM').classList.contains('hidden'); }
+// единая точка конца игры: лог, отправка очков, модалка
+function gameOver(title, body, score, retryFn){
+  log(T.finalScore(score),'good');
+  LB_submit(MODE, score);
   modal(T.failed+title, body, [[T.again, retryFn, 'amber'], [T.back, contracts, 'ghost']]);
+}
+
+// ================= NICK & LEADERBOARD =================
+// Общий реестр очков живёт на pawjury.com; зеркало на GitHub Pages ходит туда же (CORS).
+const LB_API = (location.hostname==='pawjury.com' ? '' : 'https://pawjury.com') + '/api/leaderboard';
+let NICK = '';
+try{ NICK = localStorage.getItem('pjNick')||''; }catch(e){}
+function askNick(cb){
+  modal(T.nickT, T.nickBody+'<input class="nick" id="nickIn" maxlength="16" autocomplete="off">', [[T.nickSave, ()=>{
+    const v = ($('nickIn').value||'').trim().replace(/[<>&"'`]/g,'').slice(0,16);
+    if(v.length<2){ askNick(cb); return; }
+    NICK = v;
+    try{ localStorage.setItem('pjNick', v); }catch(e){}
+    cb && cb();
+  }]]);
+  setTimeout(()=>{
+    const i = $('nickIn'); if(!i) return;
+    i.value = NICK; i.focus();
+    i.onkeydown = e=>{ if(e.key==='Enter'){ const b=$('mBtns').querySelector('button'); b && b.click(); } };
+  }, 50);
+}
+function esc(s){ return String(s).replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+function LB_localAll(){
+  try{ return JSON.parse(localStorage.getItem('pjScores')||'{}'); }catch(e){ return {}; }
+}
+function LB_saveLocal(mode, score){
+  const all = LB_localAll();
+  const me = all[NICK]||{};
+  const improved = (me[mode]||0) < score;
+  if(improved) me[mode] = score;
+  all[NICK] = me;
+  try{ localStorage.setItem('pjScores', JSON.stringify(all)); }catch(e){}
+  return improved;
+}
+function LB_rows(list, localNote){
+  let h = '';
+  if(!list.length) h = '<p class="hint">'+T.lbEmpty+'</p>';
+  else {
+    h = '<table><tr><th>'+T.lbRank+'</th><th>'+T.lbPlayer+'</th><th>'+T.lbTotal+'</th></tr>';
+    list.forEach((r,i)=>{
+      h += '<tr'+(r.nick===NICK?' class="me"':'')+'><td>'+(i+1)+'</td><td>'+esc(r.nick)+(r.nick===NICK?' '+T.lbYou:'')+'</td><td>'+r.total+'</td></tr>';
+    });
+    h += '</table>';
+  }
+  if(localNote) h += '<p class="lbnote">'+T.lbLocal+'</p>';
+  return h;
+}
+function LB_renderLocal(){
+  const all = LB_localAll();
+  const list = Object.keys(all)
+    .map(nick=>({nick, total:Object.values(all[nick]).reduce((s,v)=>s+v,0)}))
+    .sort((a,b)=>b.total-a.total);
+  $('lbBody').innerHTML = LB_rows(list, true);
+}
+function LB_load(){
+  $('lbBody').innerHTML = '<p class="hint">'+T.lbLoading+'</p>';
+  fetch(LB_API).then(r=>r.ok?r.json():Promise.reject())
+    .then(d=>{ $('lbBody').innerHTML = LB_rows(d.leaderboard||[], false); })
+    .catch(()=>LB_renderLocal());
+}
+function LB_submit(mode, score){
+  score = Math.round(score);
+  if(score<=0 || !NICK) return;
+  if(LB_saveLocal(mode, score)) log(T.newBest,'good');
+  fetch(LB_API, {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({nick:NICK, mode, score})})
+    .then(r=>r.ok?r.json():Promise.reject())
+    .then(()=>log(T.scoreSent(score),'sys'))
+    .catch(()=>log(T.scoreLocal(score),'warn'));
 }
 
 // static texts
@@ -625,6 +804,9 @@ function contractFailed(title, body, retryFn){
   $('lWait').textContent=T.lWait; $('lHint').textContent=T.lHint;
   $('pSel').textContent=T.pSel; $('pManual').textContent=T.pManual; $('stManual').innerHTML=T.stManual;
   $('tBlot').textContent=T.tBlot; $('tEnzyme').textContent=T.tEnzyme; $('tScrub').textContent=T.tScrub; $('tEnd').textContent=T.tEnd;
+  $('lbTitle').textContent=T.lbTitle;
+  $('bNick').textContent=T.bNick;
+  $('bNick').onclick=()=>askNick(LB_load);
 })();
 
 // ================= GROOMER =================
@@ -641,34 +823,62 @@ const SPECIES = {
 let G = null;
 function noun(){ return LANG==='ru' ? (G.mode==='cats'?'кота':'пса') : (G.mode==='cats'?'cat':'dog'); }
 
+const SHIFT_SECONDS = 180;
 function G_start(mode){
   G = { sp:SPECIES[mode], mode,
         day:1, money:40, fur:0, stam:100, floor:0,
         inv:{}, eq:null, cat:null, catsLeft:0, sessionFur:0,
+        earned:0, bonus:0, time:SHIFT_SECONDS, level:1, over:false,
         won:false, totalCats:0, baldIncidents:0 };
   showScreen('groomScreen');
   modal(T.gIntroT(T.gWinT[mode]), T.gIntro(mode, G.sp.win), [[T.gOpenShop, G_openShop]]);
   log(T.gAccepted(T.gWinT[mode]),'sys');
 }
+function G_score(){ return Math.round(G.fur) + G.earned*2 + G.bonus; }
 function G_hud(){
-  hud('<span>'+T.day+' <b>'+G.day+'</b></span>'+
+  const t = Math.max(0,G.time), mm = Math.floor(t/60), ss = ('0'+(t%60)).slice(-2);
+  hud('<span'+(t<=30?' class="amber"':'')+'>'+T.time+' <b>'+mm+':'+ss+'</b></span>'+
+      '<span>'+T.score+' <b>'+G_score()+'</b></span>'+
+      '<span>'+T.day+' <b>'+G.day+'</b></span>'+
       '<span class="amber">'+T.caps+' <b>$'+G.money+'</b></span>'+
       '<span>'+T.fur+' <b>'+Math.round(G.fur)+' g</b> / '+G.sp.win+'</span>'+
       '<span>'+T.energy+' <b>'+Math.round(G.stam)+'</b></span>');
 }
+// смена: часы тикают только вне модалок (лавка и интро — «бесплатны»)
+setInterval(()=>{
+  if((MODE!=='cats'&&MODE!=='dogs') || !G || G.over || modalOpen()) return;
+  G.time--;
+  const lvl = 1 + Math.floor((SHIFT_SECONDS-G.time)/40);
+  if(lvl>G.level){ G.level=lvl; log(T.diffUp,'warn'); }
+  if(G.time<=0){ G_timeUp(); return; }
+  G_hud();
+}, 1000);
+function G_timeUp(){
+  if(G.over) return;
+  G.over = true;
+  if(G.cat && !G.cat.done) G_endSession(true);
+  const score = G_score();
+  G_render();
+  gameOver(T.gWinT[G.mode], T.shiftEnd(score, Math.round(G.fur), G.earned, G.totalCats, G.baldIncidents), score, ()=>G_start(G.mode));
+}
 function G_newPet(){
-  const sp = G.sp;
+  const sp = G.sp, lvl = G.level||1;
   const coat = Math.random()<.45?'long':'short';
   const size = pick(sp.sizes);
   const dense = Math.random()<.5;
-  const temper = pick(['chill','normal','normal','skittish']);
+  // рост сложности: клиенты нервнее, нетерпеливее, колтунов больше — но и шерсти больше
+  const temper = Math.random() < Math.min(.55, .25+.06*(lvl-1)) ? 'skittish' : pick(['chill','normal','normal']);
   const base = sp.base[coat];
   const c = {
     name:pick(G.mode==='cats'?T.catNames:T.dogNames), coat, size, dense, temper,
-    hue: pick(['#c98f4e','#9a9a9a','#4d4d4d','#d8d8d8','#b06a3a']),
-    furMax: Math.round(base*(dense?1.5:1)*(size==='large'?1.25:size==='small'?.8:1)),
-    trust: RI(40,70), patience: RI(sp.pat[0],sp.pat[1]), patMax:sp.pat[1],
-    mats: coat==='long'?RI(0,sp.maxMats):0,
+    hue: pick(G.mode==='dogs' ? ['#8a5a2a','#c9a05e','#4d4d4d','#b06a3a','#d8cfa8']
+                              : ['#c98f4e','#9a9a9a','#4d4d4d','#d8d8d8','#b06a3a']),
+    spots: G.mode==='dogs' && Math.random()<.5,
+    furMax: Math.round(base*(dense?1.5:1)*(size==='large'?1.25:size==='small'?.8:1)*(1+.05*(lvl-1))),
+    trust: RI(40,70),
+    patience: Math.round(RI(sp.pat[0],sp.pat[1]) * Math.max(.55, 1-.06*(lvl-1))),
+    patMax:sp.pat[1],
+    mats: coat==='long'?RI(0, sp.maxMats + Math.floor((lvl-1)/2)):0,
     overbrush:0, bald:false, fled:false, shine:false, done:false,
   };
   c.fur = c.furMax;
@@ -710,14 +920,15 @@ function G_render(){
     if(!st.equipment) d.onclick = ()=>{ G.eq=id; log(T.holding(T.tools[id][0]),'sys'); G_render(); };
     tl.appendChild(d);
   });
-  const active = c && !c.done && !c.fled;
+  const active = !G.over && c && !c.done && !c.fled;
   $('bBrush').disabled = !active || !G.eq || G.stam<6;
   $('bBrush').textContent = G.eq? T.brush+TOOL_SHORT[G.eq] : T.brushNo;
   $('bHand').disabled = !active || G.stam<3;
   $('bTreat').disabled = !active || G.money<2;
   $('bVac').classList.toggle('hidden', !G.inv.shark);
-  $('bVac').disabled = G.floor<1 || G.stam<10;
-  $('bNext').disabled = !c || c.done;
+  $('bVac').disabled = G.over || G.floor<1 || G.stam<10;
+  $('bNext').disabled = G.over || !c || c.done;
+  $('bEndDay').disabled = G.over;
   G_draw();
 }
 const cv = $('cv'), cx = cv.getContext('2d');
@@ -744,30 +955,47 @@ function G_draw(){
     cx.fillRect(48+dx+Math.cos(a)*rx, 44+Math.sin(a)*ry, 1,1);
   }
   cx.fillStyle = c.hue;
-  const w = (c.size==='large'?46:c.size==='small'?32:40)+(isDog?6:0), h = (c.size==='small'?18:22)+(isDog?3:0);
+  const w = (c.size==='large'?46:c.size==='small'?32:40)+(isDog?8:0), h = (c.size==='small'?18:22)+(isDog?2:0);
   const bx = 48-w/2+dx, by = 60-h;
   cx.fillRect(bx,by,w,h);
   cx.fillRect(bx+2,by-3,w-4,4);
   const tphase = Math.floor(Date.now()/400)%2;
-  if(isDog){ cx.fillRect(bx+w, by-2+tphase*3, 4, 10); }
-  else { cx.fillRect(bx+w, by+3+tphase*2, 10, 3); cx.fillRect(bx+w+8, by-1+tphase*3, 3, 6); }
-  const hs = (c.size==='small'?14:16)+(isDog?2:0);
-  cx.fillRect(bx-hs+4, by-hs+6, hs, hs);
+  let hx, hy, hs;
   if(isDog){
-    cx.fillRect(bx-hs-2, by-hs+13, 7, 5);
-    cx.fillRect(bx-hs+3, by-hs+4, 3,8); cx.fillRect(bx+1, by-hs+4, 3,8);
+    // пёс: хвост торчком и машет, лапы, морда с носом, висячие уши, ошейник, язык, пятна
+    cx.fillRect(bx+w-2, by-10+tphase*4, 3, 12);
+    cx.fillRect(bx+w+1-tphase*2, by-12+tphase*4, 4, 3);
+    cx.fillRect(bx+3, by+h, 4, 5); cx.fillRect(bx+w-7, by+h, 4, 5);
+    hs = (c.size==='small'?15:17);
+    hx = bx-hs+9; hy = by-hs+2;
+    cx.fillRect(hx, hy, hs, hs);
+    cx.fillRect(hx-8, hy+7, 10, 6); // морда
+    cx.fillStyle='#0a0f0a'; cx.fillRect(hx-8, hy+7, 3, 3); // нос
+    cx.fillStyle='rgba(0,0,0,.35)'; // висячие уши темнее
+    cx.fillRect(hx-1, hy+1, 4, 11); cx.fillRect(hx+hs-3, hy+1, 4, 11);
+    cx.fillStyle='#a3392e'; cx.fillRect(hx+3, hy+hs, hs-5, 3); // ошейник
+    if(c.trust>60){ cx.fillStyle='#e88a8a'; cx.fillRect(hx-4, hy+13+tphase, 3, 4); } // язык
+    if(c.spots){
+      cx.fillStyle='rgba(0,0,0,.22)';
+      cx.fillRect(bx+w*.2, by+3, 8, 7); cx.fillRect(bx+w*.55, by+h-9, 9, 6); cx.fillRect(bx+w*.78, by+2, 6, 5);
+    }
   } else {
+    // кот: длинный хвост с изгибом, острые уши, полоски
+    cx.fillRect(bx+w, by+3+tphase*2, 10, 3); cx.fillRect(bx+w+8, by-1+tphase*3, 3, 6);
+    hs = (c.size==='small'?14:16);
+    hx = bx-hs+4; hy = by-hs+6;
+    cx.fillRect(hx, hy, hs, hs);
     cx.fillRect(bx-hs+4, by-hs+2, 4,4); cx.fillRect(bx, by-hs+2, 4,4);
+    cx.fillStyle = 'rgba(0,0,0,.28)';
+    for(let i=0;i<4;i++) cx.fillRect(bx+6+i*9, by+1, 3, h-6);
   }
-  cx.fillStyle = 'rgba(0,0,0,.28)';
-  for(let i=0;i<4;i++) cx.fillRect(bx+6+i*9, by+1, 3, h-6);
   if(c.bald){ cx.fillStyle='#e8a4a4'; cx.fillRect(bx+w*.35, by+4, 7,5); cx.fillRect(bx+w*.62, by+9, 5,4); }
   cx.fillStyle = c.trust<25 ? '#ff5d4d' : '#0a0f0a';
-  cx.fillRect(bx-hs+7, by-hs+11, 2,2); cx.fillRect(bx-hs+12, by-hs+11, 2,2);
+  cx.fillRect(hx+3, hy+5, 2,2); cx.fillRect(hx+8, hy+5, 2,2);
   if(c.shine){ cx.fillStyle='#fff2c8'; [[bx+8,by-6],[bx+w-10,by-4],[bx+w/2,by-8]].forEach(([x,y])=>{cx.fillRect(x,y,1,1);cx.fillRect(x-1,y,3,1);cx.fillRect(x,y-1,1,3);}); }
   if(c.mats>0){ cx.fillStyle='#3a2a1a'; for(let i=0;i<c.mats;i++) cx.fillRect(bx+8+i*11, by+h-7, 4,4); }
   cx.fillStyle = '#5dff7e'; cx.font='7px monospace';
-  cx.fillText(c.trust>70?(isDog?'wag wag':'purr...'):c.trust<25?(isDog?'GRRR!':'HISS!'):'', bx-hs+2, by-hs+2);
+  cx.fillText(c.trust>70?(isDog?'wag wag':'purr...'):c.trust<25?(isDog?'GRRR!':'HISS!'):'', hx-2, hy-2);
   if(shakeT>0) shakeT--;
 }
 setInterval(()=>{ if(MODE==='cats'||MODE==='dogs') G_draw(); }, 400);
@@ -778,7 +1006,7 @@ function G_gainFur(g){
 }
 function G_spendStam(n){ G.stam = Math.max(0, G.stam-n); if(G.stam<3) log(T.fumes,'warn'); }
 function G_patHit(c, n){
-  const mult = c.temper==='skittish'?1.5:c.temper==='chill'?0.7:1;
+  const mult = (c.temper==='skittish'?1.5:c.temper==='chill'?0.7:1) * (1+.12*((G.level||1)-1));
   c.patience = Math.max(0, c.patience - n*mult);
 }
 function G_checkSession(c){
@@ -799,7 +1027,7 @@ function G_endSession(paid){
     else if(c.trust>=70){ pay += 5; note.push(T.tip); }
     if(c.shine){ pay += 4; note.push(T.shineBonus); }
     if(G.sessionFur>=60) log(T.marvel(noun()),'good');
-    G.money += pay;
+    G.money += pay; G.earned += pay;
     log(T.sessionDone(c.name, Math.round(G.sessionFur), pay, note.length?' ('+note.join(', ')+')':''),'good');
     if(c.fur<c.furMax*0.5) log(T.lighter(c.name),'sys');
   } else if(paid){
@@ -966,9 +1194,9 @@ function G_endDay(){
   G_render(); G_openShop();
 }
 function G_win(){
-  G.won = true;
-  contractComplete(T.gWinT[G.mode], T.gWin(G.mode, G.sp.win, G.day, G.totalCats, G.baldIncidents));
-  log(T.gWinLog(G.sp.win),'good');
+  // веха «второй кот» — теперь бонус к очкам, смена продолжается
+  G.won = true; G.bonus += 500;
+  log(T.gBonus(G.sp.win, G.mode),'good');
 }
 $('bBrush').onclick = G_brush;
 $('bHand').onclick = G_hand;
@@ -985,7 +1213,7 @@ let V = null;
 const FURN = { sofa:[[2,1],[3,1]], table:[[6,3]], plant:[[8,1]] };
 const BLOCKED = new Set([].concat(FURN.sofa,FURN.table,FURN.plant).map(c=>c[0]+','+c[1]));
 function V_start(){
-  V = { vac:{x:0,y:0}, battery:100, got:0, target:140, fur:{}, moving:false,
+  V = { vac:{x:0,y:0}, battery:100, got:0, fur:{}, moving:false, tiles:0, fasterAt:60,
         cat:{x:VW-2,y:VH-2,awake:0}, over:false, hover:null };
   let placed=0;
   while(placed<15){
@@ -996,18 +1224,24 @@ function V_start(){
   // bonus tufts hugging the sofa edge
   [[2,2],[3,2],[4,1]].forEach(([x,y])=>{ const k=x+','+y; if(!BLOCKED.has(k)) V.fur[k]=(V.fur[k]||0)+RI(8,14); });
   showScreen('vacScreen');
-  modal(T.vTitle, T.vIntro(V.target), [[T.vPowerOn, ()=>{ V_render(); log(T.vStarted,'sys'); }]]);
+  modal(T.vTitle, T.vIntro(), [[T.vPowerOn, ()=>{ V_render(); log(T.vStarted,'sys'); }]]);
 }
 function V_render(){
   hud('<span>'+T.kBat+' <b>'+Math.max(0,Math.round(V.battery))+'%</b></span>'+
-      '<span>'+T.kGot+' <b>'+Math.round(V.got)+' g</b> / '+V.target+'</span>');
+      '<span>'+T.score+' <b>'+Math.round(V.got)+'</b></span>');
   $('vBat').textContent = Math.max(0,Math.round(V.battery))+'%';
-  $('vGot').textContent = Math.round(V.got)+' g / '+V.target;
+  $('vGot').textContent = Math.round(V.got)+' g';
   const bw=$('mBat'); bw.style.width=clamp(V.battery,0,100)+'%';
   $('mBatWrap').className='meter'+(V.battery<25?' bad':V.battery<55?' warn':'');
-  $('mGot').style.width=clamp(V.got/V.target*100,0,100)+'%';
+  $('mGot').style.width=clamp(V.got/3,0,100)+'%';
   $('mGotWrap').className='meter';
   V_draw();
+}
+function V_spawnTuft(g){
+  let x,y,guard=0;
+  do{ x=RI(0,VW-1); y=RI(0,VH-1); }while((BLOCKED.has(x+','+y)||(x===0&&y===0)) && guard++<40);
+  const k=x+','+y;
+  V.fur[k]=(V.fur[k]||0)+g;
 }
 function V_draw(){
   // wooden floor
@@ -1129,11 +1363,15 @@ vcv.addEventListener('click', e=>{
     const nxt = path.shift();
     if(!nxt || V.battery<=0){ V.moving=false; V_finishCheck(); return; }
     V.battery -= 1;
+    V.tiles++;
     V.vac = {x:nxt[0], y:nxt[1]};
+    // dino-режим: шерсть подсыпается тем быстрее, чем дольше ездим
+    if(Math.random() < .08 + V.tiles*0.0015) V_spawnTuft(RI(2,6));
+    if(V.tiles===V.fasterAt){ V.fasterAt+=60; log(T.vFaster,'warn'); }
     const k = nxt[0]+','+nxt[1];
     if(V.fur[k]){
       const g=V.fur[k]; delete V.fur[k];
-      if(g>=12 && Math.random()<.2){ V.battery-=5; log(T.vJam(g),'warn'); }
+      if(g>=12 && Math.random() < Math.min(.5, .2 + V.tiles*0.002)){ V.battery-=5; log(T.vJam(g),'warn'); }
       V.got += g;
       log(T.vSucked(g),'');
     }
@@ -1153,7 +1391,7 @@ vcv.addEventListener('click', e=>{
     }
     if(V.cat.awake>0) V.cat.awake--;
     V_render();
-    if(V.got>=V.target || V.battery<=0){ V.moving=false; V_finishCheck(); return; }
+    if(V.battery<=0){ V.moving=false; V_finishCheck(); return; }
     setTimeout(step, 110);
   };
   step();
@@ -1161,20 +1399,24 @@ vcv.addEventListener('click', e=>{
 function V_finishCheck(){
   V_render();
   if(V.over) return;
-  if(V.got>=V.target){
+  if(V.battery<=0){
     V.over=true;
-    contractComplete(T.vTitleShort, T.vWin(Math.round(V.got), Math.max(0,Math.round(V.battery))));
-  } else if(V.battery<=0){
-    V.over=true;
-    contractFailed(T.vTitleShort, T.vLose(Math.round(V.got), V.target), V_start);
+    const score = Math.round(V.got);
+    gameOver(T.vTitleShort, T.vEnd(score), score, V_start);
   }
 }
-$('vGiveUp').onclick = ()=>{ if(V && !V.over){ V.over=true; contractFailed(T.vTitleShort, T.vAbandon(Math.round(V.got)), V_start);} };
+$('vGiveUp').onclick = ()=>{
+  if(V && !V.over){
+    V.over=true;
+    const score = Math.round(V.got);
+    gameOver(T.vTitleShort, T.vAbandon(score), score, V_start);
+  }
+};
 
 // ================= ODOR CONTROL v2 =================
 let L = null;
 function L_start(){
-  L = { odor:20, turn:1, maxTurn:14, vents:3, litter:2,
+  L = { odor:20, turn:1, vents:3, litter:2, score:0,
         boxes:[{load:30,lastUsed:false},{load:20,lastUsed:false},{load:45,lastUsed:false}], over:false };
   showScreen('litScreen');
   L_buildBoxes();
@@ -1186,6 +1428,7 @@ function L_buildBoxes(){
     const d=document.createElement('div'); d.className='lbox';
     d.innerHTML='<h3>'+T.lBox+' '+(i+1)+'</h3>'+
       '<canvas id="lc'+i+'" width="66" height="40"></canvas>'+
+      '<div class="lstatus" id="ls'+i+'"></div>'+
       '<div class="meter" id="lm'+i+'w"><i id="lm'+i+'" style="width:0%"></i></div>'+
       '<div class="labs" id="ll'+i+'"></div>';
     const row=document.createElement('div'); row.className='actions'; row.style.marginTop='6px';
@@ -1199,8 +1442,18 @@ function L_buildBoxes(){
   });
 }
 function L_hud(){
-  hud('<span>'+(LANG==='ru'?'ХОД':'TURN')+' <b>'+L.turn+'</b> / '+L.maxTurn+'</span>'+
-      '<span class="amber">'+(LANG==='ru'?'ЗАПАХ':'ODOR')+' <b>'+Math.round(L.odor)+'</b> / 100</span>');
+  hud('<span>'+(LANG==='ru'?'ХОД':'TURN')+' <b>'+L.turn+'</b></span>'+
+      '<span class="amber">'+(LANG==='ru'?'ЗАПАХ':'ODOR')+' <b>'+Math.round(L.odor)+'</b> / 100</span>'+
+      '<span>'+T.score+' <b>'+L.score+'</b></span>');
+}
+// советчик: одна строка «что сделать этим ходом»
+function L_advice(){
+  const full = L.boxes.findIndex(b=>b.load>=80);
+  if(full>=0) return T.lAdvice.full(full);
+  if(L.odor>=70 && L.vents>0) return T.lAdvice.vent;
+  const warn = L.boxes.findIndex(b=>b.load>=50);
+  if(warn>=0) return T.lAdvice.warn(warn);
+  return T.lAdvice.ok;
 }
 function L_render(){
   L_hud();
@@ -1209,7 +1462,8 @@ function L_render(){
   $('mOdorWrap').className='meter'+(L.odor>=60?' bad':L.odor>=30?' warn':'');
   const mk=document.createElement('span'); // keep threshold mark after class reset
   mk.className='mark'; mk.style.left='30%'; $('mOdorWrap').appendChild(mk);
-  $('lTurns').textContent = T.turns(L.maxTurn-L.turn+1);
+  $('lTurns').textContent = T.turns(L.turn-1);
+  $('lAdvice').textContent = L.over ? '' : L_advice();
   $('lVent').textContent = T.lVent(L.vents);
   $('lVent').disabled = L.vents<=0 || L.over;
   $('lWait').disabled = L.over;
@@ -1217,7 +1471,9 @@ function L_render(){
     const pc=clamp(b.load,0,100);
     $('lm'+i).style.width=pc+'%';
     $('lm'+i+'w').className='meter'+(pc>=80?' bad':pc>=50?' warn':'');
-    $('ll'+i).textContent = T.lLoad+': '+Math.round(pc)+'%'+(pc>=50? ' — '+T.lStinks : '');
+    const st = pc>=80?'full':pc>=50?'warn':'ok';
+    const se = $('ls'+i); se.className='lstatus '+st; se.textContent = T.lStatus[st];
+    $('ll'+i).textContent = T.lLoad+': '+Math.round(pc)+'%';
     $('lScoop'+i).disabled = L.over;
     $('lFresh'+i).textContent = T.lFresh(L.litter);
     $('lFresh'+i).disabled = L.over || L.litter<=0;
@@ -1269,27 +1525,40 @@ $('lWait').onclick=()=>L_act('wait');
 function L_catsTurn(){
   log(T.lCatsTurn,'sys');
   L.boxes.forEach(b=>b.lastUsed=false);
-  const uses=RI(1,2);
+  let dBypass=0, dStomach=0;
+  // dino-режим: чем дольше держитесь, тем чаще ходят коты
+  const uses = RI(1,2) + Math.floor((L.turn-1)/6);
   for(let u=0;u<uses;u++){
     const i=RI(0,2), box=L.boxes[i], cat=pick(T.catNames);
     if(box.load>80){
-      L.odor+=8;
+      dBypass+=8;
       log(T.lBypass(cat,i),'bad');
     } else {
       box.load+=RI(12,22); box.lastUsed=true;
       if(Math.random()<.35) log(T.lUsed(cat,i),'sys');
     }
   }
-  L.odor += L.boxes.reduce((s,b)=> s + (b.load>50 ? (b.load-50)/30 : 0), 0.4);
-  L.odor = clamp(L.odor,0,100);
-  if(Math.random()<.1){ L.odor+=6; log(T.lStomach,'warn'); }
-  if(L.turn>=L.maxTurn){
+  const dBoxes = L.boxes.reduce((s,b)=> s + (b.load>50 ? (b.load-50)/30 : 0), 0);
+  const dBase = 0.4;
+  if(Math.random() < .1 + L.turn*.008){ dStomach=6; log(T.lStomach,'warn'); }
+  const total = dBypass + dStomach + dBoxes + dBase;
+  L.odor = clamp(L.odor + total, 0, 100);
+  // разбор источников запаха — чтобы было понятно, откуда взялся прирост
+  const parts=[];
+  if(dBypass) parts.push('+'+dBypass+' '+T.lPartBypass);
+  if(dBoxes>0.05) parts.push('+'+(Math.round(dBoxes*10)/10)+' '+T.lPartBoxes);
+  if(dStomach) parts.push('+'+dStomach+' '+T.lPartStomach);
+  parts.push('+'+dBase+' '+T.lPartBase);
+  log(T.lDelta(Math.round(total*10)/10, parts.join(', ')), total>=8?'bad':total>=3?'warn':'sys');
+  L.score += 10 + (L.odor<30?5:0);
+  if(L.odor>=100){
     L.over=true; L_render();
-    if(L.odor<30) contractComplete(T.lWinT, T.lWin(Math.round(L.odor)));
-    else contractFailed(T.lWinT, T.lLose(Math.round(L.odor)), L_start);
+    gameOver(T.lWinT, T.lEnd(L.turn, L.score), L.score, L_start);
     return;
   }
   L.turn++;
+  if(L.turn%4===0 && L.vents<3){ L.vents++; log(T.lRegenVent,'good'); }
+  if(L.turn%6===0 && L.litter<2){ L.litter++; log(T.lRegenLitter,'good'); }
   log(T.lTurnBegins(L.turn),'sys');
   L_render();
 }
@@ -1300,7 +1569,7 @@ let ST = null;
 const STYPE_KEYS=['mud','cola','hair','mystery'];
 const STYPE_HUE={mud:'#7a5a34', cola:'#8a3a2a', hair:'#6a7a3a', mystery:'#3a6a7a'};
 function T_start(){
-  ST = { round:1, maxRound:12, ap:2, stains:[], sel:null, over:false, cleaned:0, nextId:1 };
+  ST = { round:1, ap:2, stains:[], sel:null, over:false, cleaned:0, nextId:1, score:0 };
   T_spawn(); T_spawn();
   showScreen('stainScreen');
   modal(T.stTitle, T.stIntro, [[T.stTowels, ()=>{ T_render(); log(T.stStarted,'sys'); }]]);
@@ -1312,9 +1581,10 @@ function T_spawn(){
 }
 function T_hud(){
   const pips = '●'.repeat(ST.ap)+'○'.repeat(2-ST.ap);
-  hud('<span>'+T.round+' <b>'+ST.round+'</b> / '+ST.maxRound+'</span>'+
+  hud('<span>'+T.round+' <b>'+ST.round+'</b></span>'+
       '<span class="amber">'+T.actionsLeft+' <b>'+pips+'</b></span>'+
-      '<span>'+T.stainsN+' <b>'+ST.stains.length+'</b></span>');
+      '<span>'+T.stainsN+' <b>'+ST.stains.length+'</b> / 6</span>'+
+      '<span>'+T.score+' <b>'+ST.score+'</b></span>');
 }
 function T_render(){
   T_hud();
@@ -1395,7 +1665,7 @@ tcv.addEventListener('click', e=>{
 function T_remove(s, how){
   ST.stains = ST.stains.filter(x=>x.id!==s.id);
   if(ST.sel===s.id) ST.sel = ST.stains.length? ST.stains[0].id : null;
-  ST.cleaned++;
+  ST.cleaned++; ST.score += 25;
   log(T.stGone(T.stTypes[s.key], how),'good');
 }
 $('tBlot').onclick=()=>{
@@ -1432,15 +1702,22 @@ $('tEnd').onclick=()=>{
       if(s.fresh<=0){ s.state='set-in'; log(T.stSetIn(T.stTypes[s.key]),'warn'); }
     }
   });
-  ST.round++;
-  if(ST.round>ST.maxRound){
+  ST.score += 5;
+  if(ST.stains.length>=6){
     ST.over=true; T_render();
-    if(ST.stains.length<=1) contractComplete(T.stWinT, T.stWin(ST.stains.length, ST.cleaned));
-    else contractFailed(T.stWinT, T.stLose(ST.stains.length, ST.cleaned), T_start);
+    gameOver(T.stWinT, T.stEnd(ST.round, ST.cleaned, ST.score), ST.score, T_start);
     return;
   }
+  ST.round++;
   ST.ap=2;
-  if(Math.random()<.65){ T_spawn(); log(T.stNew(T.stTypes[ST.stains[ST.stains.length-1].key]),'warn'); }
+  // dino-режим: шанс нового пятна растёт с раундом, после 6-го возможно второе за раунд
+  if(Math.random() < Math.min(.95, .55 + ST.round*.03)){
+    T_spawn(); log(T.stNew(T.stTypes[ST.stains[ST.stains.length-1].key]),'warn');
+  }
+  if(ST.round>6 && Math.random() < (ST.round-6)*.05){
+    T_spawn(); log(T.stNew(T.stTypes[ST.stains[ST.stains.length-1].key]),'warn');
+  }
+  if(ST.round%5===0) log(T.stFaster,'warn');
   log(T.stRound(ST.round),'sys');
   T_render();
 };
