@@ -346,6 +346,7 @@ en:{
   lbLoading:'Contacting the guild ledger…',
   lbEmpty:'No scores in the ledger yet. Be the first.',
   lbLocal:'⚠ Guild ledger unreachable — showing scores saved on this device only.',
+  lbPending:'⚠ Scores from this device are not in the shared ledger yet (write access is not configured on the server).',
   lbRank:'#', lbPlayer:'Groomer', lbTotal:'Points', lbYou:'(you)',
   bNick:'Change name', nickT:'WASTELAND GROOMING GUILD — SIGN IN',
   nickBody:'<p>The guild keeps one score ledger for the whole wasteland — every mirror of this terminal writes to it. Sign your work.</p><p>Your handle (2–16 characters):</p>',
@@ -513,6 +514,7 @@ ru:{
   lbLoading:'Связь с реестром гильдии…',
   lbEmpty:'В реестре пока пусто. Будьте первым.',
   lbLocal:'⚠ Реестр гильдии недоступен — показаны только очки с этого устройства.',
+  lbPending:'⚠ Очки с этого устройства ещё не попали в общий реестр (на сервере не настроена запись).',
   lbRank:'#', lbPlayer:'Грумер', lbTotal:'Очки', lbYou:'(вы)',
   bNick:'Сменить имя', nickT:'ГИЛЬДИЯ ГРУМЕРОВ ПУСТОШИ — РЕГИСТРАЦИЯ',
   nickBody:'<p>Гильдия ведёт один реестр очков на всю пустошь — оба зеркала этого терминала пишут в него. Подпишите свою работу.</p><p>Ваш позывной (2–16 символов):</p>',
@@ -762,10 +764,29 @@ function LB_renderLocal(){
     .sort((a,b)=>b.total-a.total);
   $('lbBody').innerHTML = LB_rows(list, true);
 }
+// локальные результаты подмешиваются к серверным: пока запись в реестр не настроена
+// (или ещё не долетела), игрок всё равно видит себя в таблице — с пометкой
+function LB_mergeLocal(server){
+  const all = LB_localAll();
+  let pending = false;
+  const list = server.map(r=>({nick:r.nick, total:r.total}));
+  Object.keys(all).forEach(nick=>{
+    const total = Object.values(all[nick]).reduce((s,v)=>s+v,0);
+    if(total<=0) return;
+    const row = list.find(r=>r.nick===nick);
+    if(row){ if(total>row.total){ row.total=total; pending=true; } }
+    else { list.push({nick, total}); pending=true; }
+  });
+  list.sort((a,b)=>b.total-a.total);
+  return {list, pending};
+}
 function LB_load(){
   $('lbBody').innerHTML = '<p class="hint">'+T.lbLoading+'</p>';
   fetch(LB_API).then(r=>r.ok?r.json():Promise.reject())
-    .then(d=>{ $('lbBody').innerHTML = LB_rows(d.leaderboard||[], false); })
+    .then(d=>{
+      const m = LB_mergeLocal(d.leaderboard||[]);
+      $('lbBody').innerHTML = LB_rows(m.list, false) + (m.pending?'<p class="lbnote">'+T.lbPending+'</p>':'');
+    })
     .catch(()=>LB_renderLocal());
 }
 function LB_submit(mode, score){
