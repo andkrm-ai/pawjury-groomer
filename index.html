@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wasteland Groomer — ретро-игра о питомцах пустоши | PawJury</title>
-<meta name="description" content="Бесплатная ретро-игра в браузере: пять контрактов по уходу за питомцами пустоши — вычёсывайте котов и собак, пылесосьте берлогу, держите запах лотков под контролем и побеждайте пятна энзимами. Очки — в общей турнирной таблице.">
+<meta name="description" content="Бесплатная ретро-игра в браузере: восемь контрактов по уходу за питомцами пустоши — вычёсывайте котов и собак, пылесосьте берлогу, контролируйте запах, побеждайте пятна, спасайте диван от шерсти, стачивайте когти и охраняйте ступеньки у кровати. Очки — в общей турнирной таблице.">
 <link rel="canonical" href="https://andkrm-ai.github.io/pawjury-groomer/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://andkrm-ai.github.io/pawjury-groomer/">
 <meta property="og:site_name" content="PawJury">
 <meta property="og:title" content="Wasteland Groomer — ретро-игра о питомцах пустоши">
-<meta property="og:description" content="Пять контрактов в пустоши: грумьте котов и собак, пылесосьте шерсть, контролируйте запах лотков, побеждайте пятна. Очки со всех режимов — в общей турнирной таблице.">
+<meta property="og:description" content="Восемь контрактов в пустоши: грумьте, пылесосьте, контролируйте запах, побеждайте пятна, спасайте диван, стачивайте когти, охраняйте ступеньки. Очки — в общей таблице.">
 <meta name="twitter:card" content="summary">
 <style>
   :root{
@@ -57,7 +57,7 @@
     button{padding:8px 10px;font-size:12px}
     .log{height:96px;font-size:12px}
     /* кнопки действий каждого режима — липнут к низу экрана */
-    #groomScreen>.actions,#vacScreen>.actions,#litScreen>.actions,#stainScreen>.actions{
+    #groomScreen>.actions,#vacScreen>.actions,#litScreen>.actions,#stainScreen>.actions,#couchScreen>.actions,#nailScreen>.actions,#bedScreen>.actions{
       position:sticky;bottom:0;z-index:45;background:var(--bg);
       padding:8px 0;margin-top:8px;border-top:1px solid var(--phos-faint);
     }
@@ -89,7 +89,8 @@
   }
   .viewport{position:relative;display:flex;align-items:center;justify-content:center;background:var(--panel2);min-height:380px}
   canvas{image-rendering:pixelated;width:min(100%,440px)}
-  #vcv,#tcv{width:min(100%,660px);cursor:crosshair}
+  #vcv,#tcv,#ccv,#bcv{width:min(100%,660px);cursor:crosshair}
+  #ncv{width:min(100%,440px)}
   .catname{
     position:absolute;top:8px;left:10px;color:var(--phos);letter-spacing:.15em;font-size:13px;
     text-shadow:0 0 8px rgba(93,255,126,.5)
@@ -308,6 +309,77 @@
     </div>
   </section>
 
+  <!-- COUCH RESCUE -->
+  <section id="couchScreen" class="hidden">
+    <main>
+      <section class="panel viewport" style="min-height:300px">
+        <canvas id="ccv" width="200" height="140" aria-label="Couch map"></canvas>
+      </section>
+      <div class="side">
+        <section class="panel">
+          <h2 id="pCSel"></h2>
+          <div class="stinfo" id="cInfo"></div>
+        </section>
+        <section class="panel">
+          <h2 id="pCManual"></h2>
+          <div class="stinfo" id="cManual"></div>
+        </section>
+      </div>
+    </main>
+    <div class="actions">
+      <button id="cRoll"></button>
+      <button id="cRake"></button>
+      <button id="cBlade"></button>
+      <button id="cEnd"></button>
+    </div>
+  </section>
+
+  <!-- NAIL TRIM -->
+  <section id="nailScreen" class="hidden">
+    <main>
+      <section class="panel viewport" style="min-height:300px">
+        <div class="catname" id="nDogName">—</div>
+        <canvas id="ncv" width="120" height="100" aria-label="Nail cross-section"></canvas>
+      </section>
+      <div class="side">
+        <section class="panel">
+          <h2 id="pNDog"></h2>
+          <div class="kv"><span id="kNPat"></span><span id="nPat">—</span></div>
+          <div class="meter" id="mNPatWrap"><i id="mNPat" style="width:100%"></i></div>
+          <div class="kv"><span id="kNHeat"></span><span id="nHeat">—</span></div>
+          <div class="meter" id="mNHeatWrap"><i id="mNHeat" style="width:0%"></i></div>
+          <div class="kv"><span id="kNNail"></span><span id="nNail">—</span></div>
+          <div class="kv"><span id="kNStrikes"></span><span id="nStrikes">—</span></div>
+        </section>
+        <section class="panel">
+          <h2 id="pNManual"></h2>
+          <div class="stinfo" id="nManual"></div>
+        </section>
+      </div>
+    </main>
+    <div class="actions">
+      <button id="nGrind"></button>
+      <button id="nCheck"></button>
+      <button id="nSoothe"></button>
+      <button id="nNext" class="amber"></button>
+    </div>
+  </section>
+
+  <!-- BEDTIME PATROL -->
+  <section id="bedScreen" class="hidden">
+    <section class="panel" style="margin-bottom:10px">
+      <div class="kv"><span id="kBStrikes"></span><span id="bStrikes">—</span></div>
+      <div class="advice" id="bAdvice"></div>
+    </section>
+    <section class="panel viewport" style="min-height:300px">
+      <canvas id="bcv" width="200" height="140" aria-label="Bedroom map"></canvas>
+    </section>
+    <div class="actions">
+      <span class="hint" id="bHint"></span>
+      <button id="bBedEnd" class="amber"></button>
+    </div>
+  </section>
+
   <div class="log" id="log" aria-live="polite"></div>
 
   <footer id="foot"></footer>
@@ -328,8 +400,8 @@
 const LANG = (document.documentElement.lang||'en').startsWith('ru') ? 'ru' : 'en';
 const STR = {
 en:{
-  boardhead:'The wasteland, 2287. Pets shed, dig, spill and stain — and somebody has to deal with it. Every contract is an endless shift: the longer you hold, the harder it gets. Points from all five contracts add up on the guild leaderboard below.',
-  contract:'CONTRACT', foot:'A <a href="/">PawJury</a> mini-game. Five contracts, one wasteland, a lot of fur.',
+  boardhead:'The wasteland, 2287. Pets shed, dig, spill and stain — and somebody has to deal with it. Every contract is an endless shift: the longer you hold, the harder it gets. Points from all eight contracts add up on the guild leaderboard below.',
+  contract:'CONTRACT', foot:'A <a href="/">PawJury</a> mini-game. Eight contracts, one wasteland, a lot of fur.',
   contracts:'◂ Contracts', boardLog:'Contracts board. Pick a job.',
   failed:'✖ SHIFT OVER: ',
   back:'Back to contracts', again:'Try again',
@@ -339,6 +411,9 @@ en:{
     vacuum:['Vacuum Run','One battery charge. Fur keeps falling — faster the longer you drive. Every gram is a point. You stop when the battery does.'],
     litter:['Odor Control','Three boxes, four cats, and the smell that never sleeps. Every turn you survive = points. Odor 100 ends the shift.'],
     stains:['Stain Response','Stains arrive faster every round. Points for every stain defeated, every round survived. Six stains at once and the carpet is lost.'],
+    couch:['Couch Rescue','Fur lands on the couch faster every round. Three tools, three surfaces — the right tool clears, the wrong one makes it worse. Eight patches and the couch is condemned.'],
+    nails:['Nail Trim','Grind nails millimeter by millimeter without hitting the quick. Every safe pass = points; push your luck or bank the nail. Three yelps and the shift is over.'],
+    bedtime:['Bedtime Patrol','Senior dogs keep trying to jump off the tall bed. Send them to the stairs before they leap. Three bad landings and the vet is called.'],
   },
   // score & leaderboard
   score:'SCORE', time:'TIME',
@@ -494,10 +569,65 @@ en:{
   stWinT:'STAIN RESPONSE',
   stFaster:'▲ Stains are arriving faster.',
   stEnd:(rounds,cleaned,score)=>'<p>Six stains at once — the carpet is officially lost. You held <span class="win">'+rounds+' rounds</span> and defeated '+cleaned+' stains.</p><p>Score: <span class="win">'+score+' pts</span>.</p>',
+  // couch rescue
+  cSel:'Selected fur patch', cManualT:'Field manual',
+  cManual:'<b>CUSHIONS</b> → static roller.<br><b>RUG</b> → carpet rake.<br><b>ARMRESTS &amp; SEAMS</b> → rubber blade.<br>Right tool clears the patch. Wrong tool scatters fur or fuzzes fabric. 2 actions per round; click a patch to select it.',
+  cNone:'Click a fur patch.', cCleanTxt:'Fur-free. Enjoy the minute it lasts.',
+  cRoll:'Static roller', cRake:'Carpet rake', cBlade:'Rubber blade', cEndBtn:'End round ▸',
+  cSurf:{cushion:'cushions', rug:'rug', corner:'armrest/seam'},
+  cSurfSel:'surface', cSizeTxt:'fur amount', cRecTxt:'Manual says: ',
+  cRec:{cushion:'static roller, short back-and-forth strokes.', rug:'carpet rake, go with the pile.', corner:'rubber blade into the seam.'},
+  cTitle:'COUCH RESCUE — THE FUR KEEPS COMING',
+  cIntro:'<p>The vault\'s only couch is disappearing under fur — and the shedding <span class="win">never stops</span>. Every patch cleared is <b>+20 pts</b>, every round held is <b>+5 pts</b>.</p><p>Three tools, three surfaces: the <b>static roller</b> owns the cushions, the <b>carpet rake</b> owns the rug, the <b>rubber blade</b> owns armrests and seams. The right tool clears a patch outright; the wrong one scatters fur into new patches or fuzzes the fabric.</p><p>2 actions per round. When <span class="win">8 patches</span> cover the couch at the end of a round, it is officially condemned.</p>',
+  cGrab:'▸ Grab the tools', cStarted:'Couch rescue begins. The cat watches, sheds.',
+  cCleared:(surf,tool)=>'Patch CLEARED ('+surf+', '+tool+').',
+  cWeak:s=>'Wrong tool — some fur came off (size '+s+'), the rest dug in.',
+  cScatter:'⚠ The rake on the cushions: fur everywhere. New patch created.',
+  cFuzz:'⚠ You fuzzed the fabric. The couch remembers.',
+  cNew:s=>'▸ Fresh fur lands on the '+s+'!',
+  cRoundN:n=>'— Round '+n+' —',
+  cFaster:'▲ Shedding season intensifies.',
+  cWinT:'COUCH RESCUE',
+  cEnd:(rounds,cleaned,score)=>'<p>Eight patches at once — the couch is condemned to the fur gods. You held <span class="win">'+rounds+' rounds</span> and cleared '+cleaned+' patches.</p><p>Score: <span class="win">'+score+' pts</span>.</p>',
+  // nail trim
+  nDog:'Client', nPatT:'Patience', nHeatT:'Bit heat', nNailT:'Nail', nStrikesT:'Yelps',
+  nManualT:'Field manual',
+  nManual:'<b>GRIND</b> — one pass, +10 pts. Somewhere inside is the <span style="color:var(--red)">quick</span>: pass it and the dog YELPS (strike).<br><b>LED CHECK</b> shows safe passes left — useless on dark nails.<br><b>PAUSE</b> cools the bit (hot bit = risky) and calms the dog.<br><b>BANK NAIL</b> locks profit: exactly at the quick = <b>+40</b>, else +15.<br>Three yelps end the shift.',
+  nGrindB:'Grind ▸ +10', nCheckB:'LED check −4 pat.', nSootheB:'Pause / cool', nNextB:'Bank nail ▸',
+  nTitle:'NAIL TRIM — MILLIMETERS OF COURAGE',
+  nIntro:'<p>The wasteland\'s dogs click when they walk, and you hold the grinder. Every safe pass is <b>+10 pts</b> — but somewhere inside each nail hides the <span style="color:var(--red)">quick</span>. One pass too many and the dog <b>YELPS</b>: three yelps end the shift.</p><p><b>LED check</b> reveals how many safe passes remain (dark nails: no luck). A <b>hot bit</b> (3+ passes without pause) can sting even before the quick. <b>Bank the nail</b> to lock profit — stopping exactly at the quick pays <b>+40</b>, a completed dog pays <b>+100</b>.</p><p>Patience drains with every action. When it runs out, the client leaves — the queue does not.</p>',
+  nStart:'▸ Pick up the grinder', nStarted:'First client on the table. The grinder hums.',
+  nDark:'(dark nail)', nSafe:n=>'LED: quick visible — '+n+' safe pass'+(n===1?'':'es')+' left.',
+  nNoLed:'LED useless — the nail is pitch dark. Grind by feel.',
+  nPass:'Pass taken. The nail is shorter. Somewhere, the quick waits.',
+  nHot:'⚠ The bit runs hot — pause before the next pass.',
+  nHotSting:'⚠ HOT BIT stings the paw! Patience drops.',
+  nYelp:'✖ YELP! You hit the quick. The dog forgives, the ledger does not.',
+  nPerfect:'★ Banked EXACTLY at the quick: +40 pts.',
+  nBanked:'Nail banked: +15 pts.',
+  nZero:'Nothing ground on this nail — moving on anyway.',
+  nCooled:'Bit cooled, ears scratched. The dog exhales.',
+  nDogDone:name=>'★ '+name+' fully trimmed: +100 pts. Next client walks in — patience a notch lower.',
+  nDogLeft:name=>name+' is out of patience and out the door. Next client.',
+  nNailN:(i,tot)=>i+' / '+tot,
+  nWinT:'NAIL TRIM',
+  nEnd:(dogs,score)=>'<p>Third yelp — the guild pulls you off the grinder for the day. Dogs fully trimmed: <span class="win">'+dogs+'</span>.</p><p>Score: <span class="win">'+score+' pts</span>.</p>',
+  // bedtime patrol
+  bStrikesT:'Bad landings', bHintTxt:'Click a dog BEFORE its ring closes — you\'ll walk it down the stairs. Miss = a bad landing. Three landings and the vet is called.',
+  bEndB:'End the watch',
+  bTitle:'BEDTIME PATROL — GRAVITY IS NOT A FRIEND',
+  bIntro:'<p>The vault\'s senior dogs love the tall bed — and their joints do not. Every few seconds one shuffles to the edge and gets that <span class="win">look</span>. Click the dog before its ring closes and you walk it down the <b>stairs</b>: <b>+15 pts</b>. Miss, and it JUMPS — a bad landing.</p><p>Three bad landings and the shift ends with a vet call. The night gets busier the longer you last; every second on watch is points too.</p>',
+  bStart:'▸ Take the watch', bStarted:'Watch begins. The bed looms. The dogs plot.',
+  bSaved:name=>name+' escorted down the stairs. Dignity intact: +15 pts.',
+  bJump:name=>'✖ '+name+' JUMPED. The thud echoes. Bad landing recorded.',
+  bFaster:'▲ More dogs discover the bed.',
+  bWinT:'BEDTIME PATROL',
+  bEnd:(saved,score)=>'<p>Third bad landing — the vet is called and the watch ends. Dogs walked down safely: <span class="win">'+saved+'</span>.</p><p>Score: <span class="win">'+score+' pts</span>.</p>',
+  bGaveUp:s=>'<p>Watch ended voluntarily at <span class="win">'+s+' pts</span>. The dogs remain unsupervised…</p>',
 },
 ru:{
-  boardhead:'Пустошь, 2287 год. Питомцы линяют, копают, разливают и оставляют пятна — и кто-то должен с этим разбираться. Каждый контракт — бесконечная смена: чем дольше держитесь, тем сложнее. Очки со всех пяти контрактов суммируются в турнирной таблице гильдии ниже.',
-  contract:'КОНТРАКТ', foot:'Мини-игра <a href="https://pawjury.com/">PawJury</a>. Пять контрактов, одна пустошь, очень много шерсти.',
+  boardhead:'Пустошь, 2287 год. Питомцы линяют, копают, разливают и оставляют пятна — и кто-то должен с этим разбираться. Каждый контракт — бесконечная смена: чем дольше держитесь, тем сложнее. Очки со всех восьми контрактов суммируются в турнирной таблице гильдии ниже.',
+  contract:'КОНТРАКТ', foot:'Мини-игра <a href="https://pawjury.com/">PawJury</a>. Восемь контрактов, одна пустошь, очень много шерсти.',
   contracts:'◂ Контракты', boardLog:'Доска контрактов. Выбирайте работу.',
   failed:'✖ СМЕНА ОКОНЧЕНА: ',
   back:'К контрактам', again:'Ещё раз',
@@ -507,6 +637,9 @@ ru:{
     vacuum:['Пылесосный рейд','Один заряд батареи. Шерсть падает не переставая — и чем дольше ездите, тем быстрее. Каждый грамм — очко. Остановитесь вместе с батареей.'],
     litter:['Контроль запаха','Три лотка, четыре кота и запах, который не спит. Каждый выдержанный ход = очки. Запах 100 — конец смены.'],
     stains:['Отряд по пятнам','Пятна прибывают всё быстрее. Очки за каждое побеждённое пятно и каждый раунд. Шесть пятен разом — и ковёр потерян.'],
+    couch:['Спасение дивана','Шерсть ложится на диван всё быстрее. Три инструмента, три поверхности — верный очищает, неверный делает хуже. Восемь клоков — и диван списан.'],
+    nails:['Когтеточка наоборот','Стачивайте когти миллиметр за миллиметром, не задев пульпу. Каждый безопасный проход = очки; рискуйте или фиксируйте коготь. Три взвизга — конец смены.'],
+    bedtime:['Ночной дозор','Пожилые псы то и дело прыгают с высокой кровати. Отправляйте их на ступеньки до прыжка. Три жёстких приземления — и вызван ветеринар.'],
   },
   // очки и таблица
   score:'ОЧКИ', time:'ВРЕМЯ',
@@ -658,6 +791,61 @@ ru:{
   stWinT:'ОТРЯД ПО ПЯТНАМ',
   stFaster:'▲ Пятна прибывают быстрее.',
   stEnd:(rounds,cleaned,score)=>'<p>Шесть пятен разом — ковёр официально потерян. Вы продержались <span class="win">'+rounds+' раундов</span> и победили '+cleaned+' пятен.</p><p>Счёт: <span class="win">'+score+' очков</span>.</p>',
+  // спасение дивана
+  cSel:'Выбранный клок шерсти', cManualT:'Полевой устав',
+  cManual:'<b>ПОДУШКИ</b> → статик-роллер.<br><b>КОВРИК</b> → грабли для ковра.<br><b>ПОДЛОКОТНИКИ И ШВЫ</b> → резиновый скребок.<br>Верный инструмент снимает клок целиком. Неверный — разбрасывает шерсть или пушит ткань. 2 действия за раунд; клок выбирается кликом.',
+  cNone:'Кликните клок шерсти.', cCleanTxt:'Чисто. Наслаждайтесь этой минутой.',
+  cRoll:'Статик-роллер', cRake:'Грабли для ковра', cBlade:'Резиновый скребок', cEndBtn:'Конец раунда ▸',
+  cSurf:{cushion:'подушки', rug:'коврик', corner:'подлокотник/шов'},
+  cSurfSel:'поверхность', cSizeTxt:'объём шерсти', cRecTxt:'Устав говорит: ',
+  cRec:{cushion:'статик-роллер, короткие движения туда-сюда.', rug:'грабли, по ворсу.', corner:'резиновый скребок в шов.'},
+  cTitle:'СПАСЕНИЕ ДИВАНА — ШЕРСТЬ НЕ КОНЧАЕТСЯ',
+  cIntro:'<p>Единственный диван убежища исчезает под шерстью — и линька <span class="win">не прекращается</span>. Каждый снятый клок — <b>+20 очков</b>, каждый выдержанный раунд — <b>+5 очков</b>.</p><p>Три инструмента, три поверхности: <b>статик-роллер</b> хозяин подушек, <b>грабли</b> — коврика, <b>резиновый скребок</b> — подлокотников и швов. Верный инструмент снимает клок сразу; неверный разбрасывает шерсть новыми клоками или пушит ткань.</p><p>2 действия за раунд. Когда в конце раунда на диване <span class="win">8 клоков</span> — он официально списан.</p>',
+  cGrab:'▸ Взять инструменты', cStarted:'Спасение дивана началось. Кот наблюдает и линяет.',
+  cCleared:(surf,tool)=>'Клок СНЯТ ('+surf+', '+tool+').',
+  cWeak:s=>'Не тот инструмент — часть шерсти снялась (размер '+s+'), остальная вжилась.',
+  cScatter:'⚠ Грабли по подушкам: шерсть повсюду. Появился новый клок.',
+  cFuzz:'⚠ Вы распушили ткань. Диван это запомнит.',
+  cNew:s=>'▸ Свежая шерсть ложится на '+s+'!',
+  cRoundN:n=>'— Раунд '+n+' —',
+  cFaster:'▲ Сезон линьки набирает обороты.',
+  cWinT:'СПАСЕНИЕ ДИВАНА',
+  cEnd:(rounds,cleaned,score)=>'<p>Восемь клоков разом — диван отходит богам шерсти. Вы продержались <span class="win">'+rounds+' раундов</span> и сняли '+cleaned+' клоков.</p><p>Счёт: <span class="win">'+score+' очков</span>.</p>',
+  // когтеточка наоборот
+  nDog:'Клиент', nPatT:'Терпение', nHeatT:'Нагрев насадки', nNailT:'Коготь', nStrikesT:'Взвизги',
+  nManualT:'Полевой устав',
+  nManual:'<b>ПРОХОД</b> — один слой, +10 очков. Где-то внутри — <span style="color:var(--red)">пульпа</span>: заденете — пёс ВЗВИЗГНЕТ (страйк).<br><b>LED-ПРОВЕРКА</b> показывает, сколько безопасных проходов осталось — на тёмных когтях бесполезна.<br><b>ПАУЗА</b> остужает насадку (горячая — рискованно) и успокаивает пса.<br><b>ЗАФИКСИРОВАТЬ КОГОТЬ</b> — забрать очки: ровно у пульпы = <b>+40</b>, иначе +15.<br>Три взвизга — конец смены.',
+  nGrindB:'Проход ▸ +10', nCheckB:'LED-проверка −4 терп.', nSootheB:'Пауза / остудить', nNextB:'Зафиксировать ▸',
+  nTitle:'КОГТЕТОЧКА НАОБОРОТ — МИЛЛИМЕТРЫ ХРАБРОСТИ',
+  nIntro:'<p>Псы пустоши цокают при ходьбе, и гриндер — у вас. Каждый безопасный проход — <b>+10 очков</b>, но в каждом когте прячется <span style="color:var(--red)">пульпа</span>. Один лишний проход — и пёс <b>ВЗВИЗГНЕТ</b>: три взвизга — конец смены.</p><p><b>LED-проверка</b> показывает, сколько безопасных проходов осталось (тёмные когти — не судьба). <b>Горячая насадка</b> (3+ прохода без паузы) может ужалить и до пульпы. <b>Фиксируйте коготь</b>, чтобы забрать очки: остановка ровно у пульпы даёт <b>+40</b>, полностью обработанный пёс — <b>+100</b>.</p><p>Каждое действие тратит терпение. Кончится — клиент уйдёт; очередь не кончится никогда.</p>',
+  nStart:'▸ Взять гриндер', nStarted:'Первый клиент на столе. Гриндер гудит.',
+  nDark:'(тёмный коготь)', nSafe:n=>'LED: пульпа видна — безопасных проходов: '+n+'.',
+  nNoLed:'LED бессилен — коготь чёрный как пустошь. Работайте на ощупь.',
+  nPass:'Проход сделан. Коготь короче. Пульпа где-то ждёт.',
+  nHot:'⚠ Насадка раскалилась — сделайте паузу перед следующим проходом.',
+  nHotSting:'⚠ ГОРЯЧАЯ НАСАДКА жжёт лапу! Терпение падает.',
+  nYelp:'✖ ВЗВИЗГ! Вы задели пульпу. Пёс простит, реестр — нет.',
+  nPerfect:'★ Зафиксировано РОВНО у пульпы: +40 очков.',
+  nBanked:'Коготь зафиксирован: +15 очков.',
+  nZero:'На этом когте ничего не сточено — ну и ладно, дальше.',
+  nCooled:'Насадка остыла, за ухом почёсано. Пёс выдыхает.',
+  nDogDone:name=>'★ '+name+' обработан полностью: +100 очков. Заходит следующий — терпения на деление меньше.',
+  nDogLeft:name=>'У '+name+' кончилось терпение — ушёл. Следующий клиент.',
+  nNailN:(i,tot)=>i+' / '+tot,
+  nWinT:'КОГТЕТОЧКА НАОБОРОТ',
+  nEnd:(dogs,score)=>'<p>Третий взвизг — гильдия забирает у вас гриндер до завтра. Полностью обработано псов: <span class="win">'+dogs+'</span>.</p><p>Счёт: <span class="win">'+score+' очков</span>.</p>',
+  // ночной дозор
+  bStrikesT:'Жёсткие приземления', bHintTxt:'Кликните пса ДО того, как кольцо сомкнётся — вы сведёте его по ступенькам. Промах = жёсткое приземление. Три приземления — вызов ветеринара.',
+  bEndB:'Закончить дозор',
+  bTitle:'НОЧНОЙ ДОЗОР — ГРАВИТАЦИЯ НЕ ДРУГ',
+  bIntro:'<p>Пожилые псы убежища обожают высокую кровать — а их суставы нет. Каждые несколько секунд кто-то подходит к краю с <span class="win">тем самым взглядом</span>. Кликните пса до того, как кольцо сомкнётся, — и сведёте его по <b>ступенькам</b>: <b>+15 очков</b>. Промахнётесь — он ПРЫГНЕТ. Жёсткое приземление.</p><p>Три жёстких приземления — смена заканчивается вызовом ветеринара. Чем дольше держитесь, тем оживлённее ночь; каждая секунда дозора тоже очки.</p>',
+  bStart:'▸ Заступить в дозор', bStarted:'Дозор начат. Кровать возвышается. Псы замышляют.',
+  bSaved:name=>name+' сведён по ступенькам. Достоинство сохранено: +15 очков.',
+  bJump:name=>'✖ '+name+' ПРЫГНУЛ. Глухой удар. Приземление записано.',
+  bFaster:'▲ Ещё псы открыли для себя кровать.',
+  bWinT:'НОЧНОЙ ДОЗОР',
+  bEnd:(saved,score)=>'<p>Третье жёсткое приземление — вызван ветеринар, дозор окончен. Сведено по ступенькам: <span class="win">'+saved+'</span>.</p><p>Счёт: <span class="win">'+score+' очков</span>.</p>',
+  bGaveUp:s=>'<p>Дозор завершён добровольно на <span class="win">'+s+' очках</span>. Псы остаются без присмотра…</p>',
 },
 };
 const T = STR[LANG];
@@ -668,7 +856,7 @@ const R = (a,b) => a + Math.random()*(b-a);
 const RI = (a,b) => Math.floor(R(a,b+1));
 const pick = arr => arr[Math.floor(Math.random()*arr.length)];
 const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
-const SCREENS = ['selScreen','groomScreen','vacScreen','litScreen','stainScreen'];
+const SCREENS = ['selScreen','groomScreen','vacScreen','litScreen','stainScreen','couchScreen','nailScreen','bedScreen'];
 let MODE = null;
 
 function log(msg, cls){
@@ -696,6 +884,9 @@ function activeScore(){
   if(MODE==='vacuum' && typeof V!=='undefined' && V && !V.over) return {mode:'vacuum', score:Math.round(V.got), end:()=>{V.over=true;}};
   if(MODE==='litter' && typeof L!=='undefined' && L && !L.over) return {mode:'litter', score:L.score, end:()=>{L.over=true;}};
   if(MODE==='stains' && typeof ST!=='undefined' && ST && !ST.over) return {mode:'stains', score:ST.score, end:()=>{ST.over=true;}};
+  if(MODE==='couch' && typeof C!=='undefined' && C && !C.over) return {mode:'couch', score:C.score, end:()=>{C.over=true;}};
+  if(MODE==='nails' && typeof N!=='undefined' && N && !N.over) return {mode:'nails', score:N.score, end:()=>{N.over=true;}};
+  if(MODE==='bedtime' && typeof B!=='undefined' && B && !B.over) return {mode:'bedtime', score:Math.round(B.score), end:()=>{B.over=true;}};
   return null;
 }
 function contracts(){
@@ -721,6 +912,9 @@ function startMode(mode){
   else if(mode==='vacuum') V_start();
   else if(mode==='litter') L_start();
   else if(mode==='stains') T_start();
+  else if(mode==='couch') C_start();
+  else if(mode==='nails') N_start();
+  else if(mode==='bedtime') B_start();
 }
 function modalOpen(){ return !$('ovM').classList.contains('hidden'); }
 // единая точка конца игры: лог, отправка очков, модалка
@@ -824,7 +1018,7 @@ function LB_submit(mode, score){
   $('foot').innerHTML = T.foot;
   $('bContracts').textContent = T.contracts;
   const board = $('board'); board.innerHTML='';
-  ['cats','dogs','vacuum','litter','stains'].forEach((m,i)=>{
+  ['cats','dogs','vacuum','litter','stains','couch','nails','bedtime'].forEach((m,i)=>{
     const b = document.createElement('button');
     b.className='contract';
     b.innerHTML='<span class="cno">'+T.contract+' 0'+(i+1)+'</span>'+
@@ -1761,11 +1955,401 @@ $('tEnd').onclick=()=>{
   T_render();
 };
 
+// ================= COUCH RESCUE =================
+const ccv = $('ccv'), cx2 = ccv.getContext('2d');
+let C = null;
+const CSURF_HUE = {cushion:'#8a6a3a', rug:'#5a3a6a', corner:'#3a5a7a'};
+function C_zonePoint(surf){
+  if(surf==='cushion') return {x:R(52,148), y:R(34,72)};
+  if(surf==='rug') return {x:R(20,180), y:R(100,128)};
+  return Math.random()<.5 ? {x:R(28,46), y:R(34,72)} : {x:R(154,172), y:R(34,72)};
+}
+function C_spawn(){
+  const surf = pick(['cushion','cushion','rug','corner']);
+  const p = C_zonePoint(surf);
+  C.patches.push({id:C.nextId++, surf, size:R(9,16), x:p.x, y:p.y});
+}
+function C_start(){
+  C = { round:1, ap:2, patches:[], sel:null, over:false, cleaned:0, nextId:1, score:0 };
+  C_spawn(); C_spawn();
+  $('pCSel').textContent=T.cSel; $('pCManual').textContent=T.cManualT; $('cManual').innerHTML=T.cManual;
+  $('cRoll').textContent=T.cRoll; $('cRake').textContent=T.cRake; $('cBlade').textContent=T.cBlade; $('cEnd').textContent=T.cEndBtn;
+  showScreen('couchScreen');
+  modal(T.cTitle, T.cIntro, [[T.cGrab, ()=>{ C_render(); log(T.cStarted,'sys'); }]]);
+}
+function C_hud(){
+  const pips = '●'.repeat(C.ap)+'○'.repeat(2-C.ap);
+  hud('<span>'+T.round+' <b>'+C.round+'</b></span>'+
+      '<span class="amber">'+T.actionsLeft+' <b>'+pips+'</b></span>'+
+      '<span>FUR <b>'+C.patches.length+'</b> / 8</span>'+
+      '<span>'+T.score+' <b>'+C.score+'</b></span>');
+}
+function C_render(){
+  C_hud();
+  // room floor
+  cx2.fillStyle='#121d0d'; cx2.fillRect(0,0,200,140);
+  // rug
+  for(let y=9;y<14;y++) for(let x=1;x<19;x++){
+    cx2.fillStyle=(x+y)%2?'#241733':'#1d122b'; cx2.fillRect(x*10,y*10,10,10);
+  }
+  cx2.strokeStyle='#3a2a52'; cx2.lineWidth=2; cx2.strokeRect(10,90,180,44);
+  // couch: back, arms, cushions
+  cx2.fillStyle='#4a3a20'; cx2.fillRect(24,16,152,18);
+  cx2.fillStyle='#5a4728'; cx2.fillRect(24,30,26,48); cx2.fillRect(150,30,26,48);
+  cx2.fillStyle='#6a5530'; cx2.fillRect(50,34,50,44); cx2.fillRect(100,34,50,44);
+  cx2.strokeStyle='#2e2412'; cx2.lineWidth=2;
+  cx2.strokeRect(24,16,152,62); cx2.beginPath();
+  cx2.moveTo(100,34); cx2.lineTo(100,78); cx2.stroke();
+  // patches
+  C.patches.forEach(p=>{
+    const r=clamp(p.size/2,3,14);
+    cx2.strokeStyle=CSURF_HUE[p.surf]==='#8a6a3a'?'#d8c9a0':'#c9c9c9';
+    cx2.lineWidth=1;
+    for(let i=0;i<Math.round(r*2.5);i++){
+      const a=i*2.399, rr=r*Math.sqrt((i%9)/9);
+      const px=p.x+Math.cos(a)*rr, py=p.y+Math.sin(a)*rr*0.75;
+      cx2.beginPath(); cx2.moveTo(px-1.6,py+1.2); cx2.quadraticCurveTo(px,py-1.6,px+1.6,py+.8); cx2.stroke();
+    }
+    let ring = CSURF_HUE[p.surf];
+    cx2.strokeStyle=ring; cx2.lineWidth=1;
+    cx2.beginPath(); cx2.arc(p.x,p.y,r+4,0,7); cx2.stroke();
+    if(C.sel===p.id){
+      cx2.strokeStyle='#ffb54d'; cx2.lineWidth=1.5;
+      cx2.strokeRect(p.x-r-7,p.y-r-7,r*2+14,r*2+14);
+    }
+  });
+  if(!C.patches.length){
+    cx2.fillStyle='#2f7a45'; cx2.font='10px monospace';
+    cx2.fillText(T.cCleanTxt, 30, 70);
+  }
+  const sel = C.patches.find(p=>p.id===C.sel);
+  const info = $('cInfo');
+  if(!sel) info.innerHTML = '<span style="color:var(--phos-dim)">'+T.cNone+'</span>';
+  else info.innerHTML = '<b style="color:'+CSURF_HUE[sel.surf]+'">■</b> <b>'+T.cSurf[sel.surf]+'</b><br>'+
+      T.cSizeTxt+': '+Math.round(sel.size)+'<br>'+
+      '<span class="rec">'+T.cRecTxt+T.cRec[sel.surf]+'</span>';
+  const dis = C.over || !sel || C.ap<1;
+  $('cRoll').disabled=dis; $('cRake').disabled=dis; $('cBlade').disabled=dis;
+  $('cEnd').disabled = C.over;
+}
+setInterval(()=>{ if(MODE==='couch'&&C&&!C.over) C_render(); }, 400);
+ccv.addEventListener('click', e=>{
+  if(MODE!=='couch'||!C||C.over) return;
+  const r = ccv.getBoundingClientRect();
+  const mx=(e.clientX-r.left)/r.width*200, my=(e.clientY-r.top)/r.height*140;
+  let best=null, bd=1e9;
+  C.patches.forEach(p=>{
+    const d=Math.hypot(p.x-mx,p.y-my);
+    if(d<bd && d<clamp(p.size/2,3,14)+9){ bd=d; best=p; }
+  });
+  if(best){ C.sel=best.id; C_render(); }
+});
+function C_remove(p, tool){
+  C.patches = C.patches.filter(x=>x.id!==p.id);
+  if(C.sel===p.id) C.sel = C.patches.length? C.patches[0].id : null;
+  C.cleaned++; C.score += 20;
+  log(T.cCleared(T.cSurf[p.surf], tool),'good');
+}
+function C_tool(tool){
+  const p=C.patches.find(x=>x.id===C.sel); if(!p||C.ap<1) return;
+  C.ap--;
+  const right = (tool==='roll'&&p.surf==='cushion')||(tool==='rake'&&p.surf==='rug')||(tool==='blade'&&p.surf==='corner');
+  const names={roll:T.cRoll,rake:T.cRake,blade:T.cBlade};
+  if(right){ C_remove(p, names[tool]); }
+  else if(tool==='rake'&&p.surf!=='rug'){
+    log(T.cScatter,'bad'); C_spawn();
+    p.size*=0.85;
+  } else if(tool==='roll'&&p.surf==='rug'){
+    log(T.cFuzz,'bad'); p.size*=0.9;
+  } else {
+    p.size*=0.65;
+    if(p.size<4) C_remove(p, names[tool]);
+    else log(T.cWeak(Math.round(p.size)),'warn');
+  }
+  C_render();
+}
+$('cRoll').onclick=()=>C_tool('roll');
+$('cRake').onclick=()=>C_tool('rake');
+$('cBlade').onclick=()=>C_tool('blade');
+$('cEnd').onclick=()=>{
+  if(C.over) return;
+  C.score += 5;
+  if(C.patches.length>=8){
+    C.over=true; C_render();
+    gameOver(T.cWinT, T.cEnd(C.round, C.cleaned, C.score), C.score, C_start);
+    return;
+  }
+  C.round++; C.ap=2;
+  if(Math.random() < Math.min(.95, .6 + C.round*.03)){
+    C_spawn(); log(T.cNew(T.cSurf[C.patches[C.patches.length-1].surf]),'warn');
+  }
+  if(C.round>5 && Math.random() < (C.round-5)*.06){
+    C_spawn(); log(T.cNew(T.cSurf[C.patches[C.patches.length-1].surf]),'warn');
+  }
+  if(C.round%5===0) log(T.cFaster,'warn');
+  log(T.cRoundN(C.round),'sys');
+  C_render();
+};
+
+// ================= NAIL TRIM =================
+const ncv = $('ncv'), nx2 = ncv.getContext('2d');
+let N = null;
+function N_newNail(){
+  const dark = Math.random()<.35;
+  return { total:RI(6,9), safe:RI(2,5), ground:0, dark, revealed:false, done:false };
+}
+function N_newDog(){
+  N.dog = { name:pick(T.dogNames), pat:clamp(90 - N.dogsDone*6, 45, 90) };
+  N.nails = Array.from({length:8}, N_newNail);
+  N.idx = 0; N.heat = 0;
+  $('nDogName').textContent = N.dog.name;
+  log(N.dogsDone===0 ? T.nStarted : '', 'sys');
+}
+function N_start(){
+  N = { dog:null, nails:[], idx:0, heat:0, strikes:0, score:0, dogsDone:0, over:false };
+  $('pNDog').textContent=T.nDog; $('kNPat').textContent=T.nPatT; $('kNHeat').textContent=T.nHeatT;
+  $('kNNail').textContent=T.nNailT; $('kNStrikes').textContent=T.nStrikesT;
+  $('pNManual').textContent=T.nManualT; $('nManual').innerHTML=T.nManual;
+  $('nGrind').textContent=T.nGrindB; $('nCheck').textContent=T.nCheckB;
+  $('nSoothe').textContent=T.nSootheB; $('nNext').textContent=T.nNextB;
+  N_newDog();
+  showScreen('nailScreen');
+  modal(T.nTitle, T.nIntro, [[T.nStart, ()=>{ N_render(); }]]);
+}
+function N_hud(){
+  hud('<span>'+T.score+' <b>'+N.score+'</b></span>'+
+      '<span class="amber">'+T.nStrikesT+' <b>'+'✖'.repeat(N.strikes)+'○'.repeat(3-N.strikes)+'</b></span>');
+}
+function N_render(){
+  N_hud();
+  const nail = N.nails[N.idx];
+  // panel
+  $('nPat').textContent = Math.round(N.dog.pat);
+  $('mNPat').style.width = clamp(N.dog.pat,0,100)+'%';
+  $('mNPatWrap').className = 'meter'+(N.dog.pat<30?' bad':N.dog.pat<55?' warn':'');
+  $('nHeat').textContent = N.heat>=3 ? '🔥' : N.heat;
+  $('mNHeat').style.width = clamp(N.heat/4*100,0,100)+'%';
+  $('mNHeatWrap').className = 'meter'+(N.heat>=3?' bad':N.heat===2?' warn':'');
+  $('nNail').textContent = T.nNailN(N.idx+1, 8) + (nail.dark?' '+T.nDark:'');
+  $('nStrikes').textContent = N.strikes+' / 3';
+  // canvas: paw + nail cross-section
+  nx2.fillStyle='#0d150e'; nx2.fillRect(0,0,120,100);
+  // paw
+  nx2.fillStyle='#8a5a2a';
+  nx2.fillRect(8,64,40,26);
+  [12,22,32].forEach(x=>nx2.fillRect(x,56,8,10));
+  nx2.fillStyle='#c9a05e'; nx2.fillRect(40,60,12,12);
+  // nail zoom: segments from tip (right) to base (left)
+  const nsegs = nail.total, segW = 8, x0 = 110 - nsegs*segW, y0=20;
+  nx2.fillStyle='#2f7a45'; nx2.font='7px monospace';
+  for(let i=0;i<nsegs;i++){
+    const fromTip = nsegs-1-i;
+    const grounded = fromTip < nail.ground;
+    let col;
+    if(grounded) col = '#1c4027';
+    else col = nail.dark ? '#3b3f46' : '#d8c9a0';
+    nx2.fillStyle = col;
+    nx2.fillRect(x0+i*segW, y0, segW-1, 16);
+  }
+  // quick zone (revealed only after LED check on light nails)
+  if(nail.revealed && !nail.dark){
+    const qsegs = nail.total - nail.safe;
+    nx2.fillStyle='rgba(255,93,77,.55)';
+    nx2.fillRect(x0, y0, qsegs*segW-1, 16);
+  }
+  nx2.strokeStyle='#2f7a45'; nx2.lineWidth=1; nx2.strokeRect(x0-1, y0-1, nsegs*segW+1, 18);
+  nx2.fillStyle='#5dff7e';
+  nx2.fillText('◂ '+(LANG==='ru'?'ОСНОВАНИЕ':'BASE'), 6, y0+28);
+  nx2.fillText((LANG==='ru'?'КОНЧИК':'TIP')+' ▸', 92, y0+38);
+  if(nail.revealed && !nail.dark){
+    nx2.fillStyle='#ff5d4d'; nx2.fillText(LANG==='ru'?'пульпа':'quick', x0, y0-4);
+  }
+  // buttons
+  $('nGrind').disabled = N.over || nail.done;
+  $('nCheck').disabled = N.over || nail.done || nail.revealed;
+  $('nSoothe').disabled = N.over;
+  $('nNext').disabled = N.over;
+}
+function N_spendPat(v){
+  N.dog.pat -= v;
+  if(N.dog.pat<=0){
+    log(T.nDogLeft(N.dog.name),'warn');
+    N.dogsDone += 0; N_newDog(); N_render();
+    return true;
+  }
+  return false;
+}
+$('nGrind').onclick=()=>{
+  const nail=N.nails[N.idx]; if(nail.done||N.over) return;
+  // hot bit sting
+  if(N.heat>=3 && Math.random()<.35){
+    log(T.nHotSting,'bad'); N.heat=0;
+    if(N_spendPat(10)) return;
+    N_render(); return;
+  }
+  nail.ground++; N.heat++;
+  const remainingSafe = nail.safe - nail.ground;
+  if(remainingSafe < 0){
+    // hit the quick
+    N.strikes++; nail.done=true; N.heat=0;
+    log(T.nYelp,'bad');
+    if(N_spendPat(15)) { if(N.strikes<3) return; }
+    if(N.strikes>=3){
+      N.over=true; N_render();
+      gameOver(T.nWinT, T.nEnd(N.dogsDone, N.score), N.score, N_start);
+      return;
+    }
+  } else {
+    N.score += 10;
+    log(T.nPass, 'sys');
+    if(N.heat>=3) log(T.nHot,'warn');
+    if(N_spendPat(3)) return;
+  }
+  N_render();
+};
+$('nCheck').onclick=()=>{
+  const nail=N.nails[N.idx]; if(nail.done||nail.revealed||N.over) return;
+  if(N_spendPat(4)) return;
+  if(nail.dark){ log(T.nNoLed,'warn'); nail.revealed=true; }
+  else { nail.revealed=true; log(T.nSafe(Math.max(0,nail.safe-nail.ground)),'good'); }
+  N_render();
+};
+$('nSoothe').onclick=()=>{
+  if(N.over) return;
+  N.heat=0; N.dog.pat = clamp(N.dog.pat+6, 0, 100);
+  log(T.nCooled,'good');
+  N_render();
+};
+$('nNext').onclick=()=>{
+  const nail=N.nails[N.idx]; if(N.over) return;
+  if(!nail.done){
+    if(nail.ground===0) log(T.nZero,'sys');
+    else if(nail.ground===nail.safe){ N.score+=40; log(T.nPerfect,'good'); }
+    else { N.score+=15; log(T.nBanked,'good'); }
+    nail.done=true;
+  }
+  // advance
+  const next = N.nails.findIndex(x=>!x.done);
+  if(next===-1){
+    N.dogsDone++; N.score+=100;
+    log(T.nDogDone(N.dog.name),'good');
+    N_newDog();
+  } else N.idx = next;
+  N.heat=0;
+  N_render();
+};
+
+// ================= BEDTIME PATROL =================
+const bcv = $('bcv'), bx2 = bcv.getContext('2d');
+let B = null, B_timer = null;
+function B_start(){
+  if(B_timer){ clearInterval(B_timer); B_timer=null; }
+  B = { dogs:[], strikes:0, saved:0, score:0, over:false, t:0, nextSpawn:1800, spawnGap:5200 };
+  $('kBStrikes').textContent=T.bStrikesT;
+  $('bHint').textContent=T.bHintTxt;
+  $('bBedEnd').textContent=T.bEndB;
+  $('bAdvice').textContent='';
+  showScreen('bedScreen');
+  modal(T.bTitle, T.bIntro, [[T.bStart, ()=>{
+    log(T.bStarted,'sys');
+    B_timer = setInterval(B_tick, 100);
+  }]]);
+}
+function B_hud(){
+  hud('<span>'+T.score+' <b>'+Math.round(B.score)+'</b></span>'+
+      '<span class="amber">'+T.bStrikesT+' <b>'+'✖'.repeat(B.strikes)+'○'.repeat(3-B.strikes)+'</b></span>');
+}
+function B_tick(){
+  if(!B||B.over||modalOpen()) return;
+  B.t += 100; B.score += 0.1;
+  B.nextSpawn -= 100;
+  if(B.nextSpawn<=0){
+    const max = RI(2600, 4200);
+    B.dogs.push({ id:B.t, name:pick(T.dogNames), x:R(60,150), t:max, max,
+                  hue:pick(['#8a5a2a','#c9a05e','#4d4d4d','#b06a3a']) });
+    B.spawnGap = Math.max(1700, B.spawnGap - 90);
+    B.nextSpawn = B.spawnGap;
+    if(B.spawnGap<3400 && !B.f1){ B.f1=true; log(T.bFaster,'warn'); }
+    if(B.spawnGap<2400 && !B.f2){ B.f2=true; log(T.bFaster,'warn'); }
+  }
+  B.dogs.slice().forEach(d=>{
+    d.t -= 100;
+    if(d.t<=0){
+      B.dogs = B.dogs.filter(x=>x!==d);
+      B.strikes++;
+      log(T.bJump(d.name),'bad');
+      if(B.strikes>=3){
+        B.over=true; clearInterval(B_timer); B_timer=null;
+        B_render();
+        gameOver(T.bWinT, T.bEnd(B.saved, Math.round(B.score)), Math.round(B.score), B_start);
+      }
+    }
+  });
+  B_render();
+}
+function B_render(){
+  if(!B) return;
+  B_hud();
+  $('bStrikes').textContent = B.strikes+' / 3';
+  // room
+  bx2.fillStyle='#121d0d'; bx2.fillRect(0,0,200,140);
+  bx2.fillStyle='#0d150e'; bx2.fillRect(0,120,200,20);
+  // tall bed
+  bx2.fillStyle='#4a3a20'; bx2.fillRect(40,60,120,20);   // frame
+  bx2.fillStyle='#6a5530'; bx2.fillRect(40,48,120,14);   // mattress
+  bx2.fillStyle='#8a7a50'; bx2.fillRect(44,44,44,8);     // pillow
+  bx2.fillStyle='#4a3a20'; bx2.fillRect(44,80,8,40); bx2.fillRect(148,80,8,40); // legs
+  // stairs at right side of bed
+  bx2.fillStyle='#6b7280';
+  bx2.fillRect(160,92,14,28); bx2.fillRect(174,106,14,14);
+  bx2.fillStyle='#9ca3af'; bx2.fillRect(160,92,14,3); bx2.fillRect(174,106,14,3);
+  bx2.strokeStyle='#3f4854'; bx2.lineWidth=1; bx2.strokeRect(160,92,28,28);
+  // dogs on the bed
+  B.dogs.forEach(d=>{
+    const y=36;
+    // body
+    bx2.fillStyle=d.hue;
+    bx2.fillRect(d.x-7,y,14,8);
+    bx2.fillRect(d.x+5,y-5,6,6);   // head
+    bx2.fillRect(d.x-9,y+1,3,4);   // tail
+    bx2.fillStyle='#0a0f0a'; bx2.fillRect(d.x+8,y-4,2,2); // eye
+    // countdown ring
+    const frac = clamp(d.t/d.max,0,1);
+    bx2.strokeStyle = frac>.5?'#5dff7e':frac>.25?'#ffb54d':'#ff5d4d';
+    bx2.lineWidth=2;
+    bx2.beginPath(); bx2.arc(d.x, y+2, 12, -Math.PI/2, -Math.PI/2 + Math.PI*2*frac); bx2.stroke();
+  });
+}
+bcv.addEventListener('click', e=>{
+  if(MODE!=='bedtime'||!B||B.over) return;
+  const r = bcv.getBoundingClientRect();
+  const mx=(e.clientX-r.left)/r.width*200, my=(e.clientY-r.top)/r.height*140;
+  let best=null, bd=1e9;
+  B.dogs.forEach(d=>{
+    const dd=Math.hypot(d.x-mx, 38-my);
+    if(dd<bd && dd<16){ bd=dd; best=d; }
+  });
+  if(best){
+    B.dogs = B.dogs.filter(x=>x!==best);
+    B.saved++; B.score += 15;
+    log(T.bSaved(best.name),'good');
+    B_render();
+  }
+});
+$('bBedEnd').onclick=()=>{
+  if(!B||B.over) return;
+  B.over=true; clearInterval(B_timer); B_timer=null;
+  const s=Math.round(B.score);
+  log(T.finalScore(s),'good');
+  LB_submit('bedtime', s);
+  modal(T.bWinT, T.bGaveUp(s), [[T.again, B_start, 'amber'], [T.back, contracts, 'ghost']]);
+};
+
 // ================= BOOT =================
 $('bContracts').onclick = contracts;
 (function(){
   const m = new URLSearchParams(location.search).get('mode');
-  if(m && ['cats','dogs','vacuum','litter','stains'].includes(m)) startMode(m);
+  if(m && ['cats','dogs','vacuum','litter','stains','couch','nails','bedtime'].includes(m)) startMode(m);
   else contracts();
 })();
 </script>
